@@ -1,18 +1,31 @@
 #!/usr/bin/awk -f
 
+# Awkventure game engine
+# Requires gamelib.awk
+
 BEGIN {
-	# CONSTANTS
-	screen_width = 122
-	screen_height = 27
+
+	# CONSTANTS & GLOBALS
+
+	# Player position
 	player_x = 1
 	player_y = 1
+	entities[0] = 0
 
-	# Keybinding defaults
-	KEY["EXIT"] = "q"
-	KEY["UP"] = "z"
-	KEY["DOWN"] = "s"
-	KEY["LEFT"] = "q"
-	KEY["RIGHT"] = "d"
+	CURRENT_SCREEN[0] = 0
+
+	# fill screen
+	for (y=0; y<=screen_height;y++) {
+		for (x=0;x<=screen_width;x++) {
+			CURRENT_SCREEN[x, y] = " "
+		}
+	}
+
+	#
+	SCREEN_BUFFER[0] = 0
+
+	store_entity(0, player_x, player_y)
+
 }
 
 # Game settings loader
@@ -24,6 +37,7 @@ BEGIN {
 	} while (trim($0) != "")
 }
 
+# Subtexts loader
 /^\[SUBTEXTS\]/ {
 	do {
 		getline
@@ -94,15 +108,18 @@ END {
 	# basic console setup
 	printf "\033[?25l" # Hide the cursor
 	system("stty -echo")
-
+	cls()
 	
 
 	while(1) {
 		handle_input()
 		#update()
-		clear_screen()
+		
+		printf "\033[H" 
 		render()
-		system("sleep 1")
+		render_buffer()
+		
+		system("sleep 0.01")
 	}
 	system("reset")
 }

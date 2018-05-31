@@ -14,10 +14,11 @@ Test subtext please ignore
  \__,_| \_/\_/ |_|\_\  \_/ \___|_| |_|\__|\__,_|_|  \___|
 
 [KEYBINDINGS]
-UP=t
-DOWN=g
-LEFT=f
-RIGHT=h
+UP=z
+DOWN=s
+LEFT=q
+RIGHT=d
+ESCAPE=p
 
 [MAP]
 ############
@@ -28,12 +29,12 @@ RIGHT=h
 ############
 
 [MONSTERS]
-name, char, color
+name, char, front_color
 player, @, red
 zombie, z, green
 sheep, s, white
 
 [TILES]
-name, char, color
-ground, ., white
-wall, #, brown
+name, char, front_color, back_color
+ground, ., white, black
+wall, #, white, brown

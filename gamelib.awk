@@ -1,50 +1,15 @@
-function ltrim(s) { sub(/^[ \t\r\n]+/, "", s); return s }
-function rtrim(s) { sub(/[ \t\r\n]+$/, "", s); return s }
-function trim(s) { return rtrim(ltrim(s)); }
+# Game functions library
+# Requires stdlib.awk
 
-function array_length(array,    alength) {
-	alength = 0
-	for (item in array) {
-		alength++
-	} 
-	return alength
-}
-
-function randint(min, max) {
-	return int(((rand()*100) % (max -  min + 1)) + min)
-}
-
-function center(line, screen_width) {
-	space_left = screen_width - length(line)
-	side_space = int(space_left/2)
-	for (i=0; i <= side_space; i++) {
-		newline = newline " "
-	}
-	newline = newline line
-	for (i=0; i <= side_space; i++) {
-		newline = newline " "
-	}
-	return newline
+function store_entity(id, pos_x, pos_y) {
+	entities[0, id] = id
+	entities[0, x] = pos_x
+	entities[0, y] = pos_y
 }
 
 function print_at_row(line, row) {
 	printf "\033[%s;0H", row
 	printf line
-}
-
-function print_centered(line, screen_width) {
-	space_left = screen_width - length(line)
-	side_space = int(space_left/2)
-
-	for (i=0; i <= side_space; i++) {
-		printf " "
-	}
-	printf line
-	for (i=0; i <= side_space; i++) {
-		printf " "
-	}
-	printf "\n"
-
 }
 
 function render_banner(banner_lines, subtext, screen_width, screen_height) {
@@ -57,42 +22,73 @@ function render_banner(banner_lines, subtext, screen_width, screen_height) {
 		printf "\n"
 	}
 	for (y=0;y<=banner_height;y++) {
-		print_centered(banner_lines[y], screen_width)
+		center(banner_lines[y], screen_width)
 	}
 	printf "\n"
-	print_centered(subtext, screen_width)
+	center(subtext, screen_width)
 	for (y=0;y<=space;y++) {
 		printf "\n"
 	}
 }
 
-function get_input() {
+function get_input(   input) {
 	system("stty -echo") # turn off echo
 	cmd = "bash -c 'read -n 1 input; echo $input'"
 	cmd | getline input
-	system("stty echo") # turn on echo
+	close(cmd)
 	return input
 }
 
-function handle_input(input) {
+function handle_input(   key) {
 	key = get_input()
-	print key
+	if (key == KEY["UP"]) {
+		entities[0, y]--
+	}  else if (key == KEY["DOWN"]) {
+		entities[0, y]++
+	} else if (key == KEY["LEFT"]) {
+		entities[0, x]--
+	} else if (key == KEY["RIGHT"]) {
+		entities[0, x]++
+	} else if (key == KEY["ESCAPE"]) {
+		cls()
+		printf "\033[H"
+		printf "\033[?25h"
+		system("stty echo")
+		exit 0
+	}
 }
 
-function clear_screen() {
-	printf "\033[H" # Move the cursor to the upper-left corner of the screen
-}
+# Need to make buffer render
+# first draw to buffer
+# then dump buffer to screen (only changed chars)
 
 function render() {
-	system("stty echo") # echo on
-	printf "\033[H" # cursor to upper left
-	for (i=0; i<=screen_width*screen_height;i++) {
-		printf "."
-		if (i%screen_width == 0) {
-			printf "\n"
-		}	
+	# Render world
+	for (y=0; y<=screen_height;y++) {
+		for (x=0;x<=screen_width;x++) {
+			SCREEN_BUFFER[x, y]="."
+		}
 	}
-	system("stty -echo") # echo off
+
+	SCREEN_BUFFER[entities[0, x], entities[0, y]] = "@"
+
+	# Render entity
+	#putch("@", , )
+
+}
+
+# Line-based buffer
+function render_buffer() {
+	printf "\033[H" # cursor to upper left
+
+	for (y=0; y<=screen_height;y++) {
+		for (x=0;x<=screen_width;x++) {
+			if (CURRENT_SCREEN[x, y] != SCREEN_BUFFER[x, y]) { # only print if screen line changed
+				printf "\033[%s;%sH%c", y, x, SCREEN_BUFFER[x, y]
+				CURRENT_SCREEN[x, y] = SCREEN_BUFFER[x, y]
+			}
+		}
+	}
 }
 
 function update() {
