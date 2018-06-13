@@ -20,8 +20,6 @@ function repeat( str, n,    rep, i )
 
 function array_length(array,   l) {l = 0; for (item in array) {l++}; return l}
 
-#function init_array(v){split(v, tempArray); return tempArray;}
-
 # Console functions
 
 function putch(char, x, y) {
