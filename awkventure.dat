@@ -44,25 +44,57 @@ QUIT = p
 ############           ############
 
 [LEVEL 1: SCRIPT]
-PUT ENTITY [ ID 0; TYPE troll; COLOR green; BEHAVIOR docile ] AT (1, 3)
-SET ENTITY [ ID 0 ] path TO  [(3,1), (3,2)]
-SET ENTITY [ ID 0] conversation TO "YOU WOULD TASTE GREAT IN A STEW!; COME HERE!"
-PUT TILE chest [ ACTION trap ] AT (2, 5)
-PUT ITEM key AT (5, 9)
-ON level_enter SHOW "You have entered level $level_nr"
-ON level_enter SHOW "You hear feint, vaguely trollish grunts coming from afar."
-ON level_enter SPAWN [RARE mouse, COMMON scavenger, bogeyman]
+ADD_ENTITY troll 5,3
+SET_NATURE docile
 
+ADD_TILE chest 2,5
+SET_ACTION trap
+
+ADD_ITEM key 5,9
+
+SHOW "You have entered level 1"
+SHOW "You hear feint, vaguely trollish grunts coming from afar."
+
+SPAWN_RARE bogeyman
+SPAWN_COMMON zombie skeleton
+SPAWN mouse spider
+
+END_SCRIPT
+
+
+
+
+
+[ENTITY villager: SCRIPT]
+
+ON_TALK greeting()
+
+IF flag THEN test() ELSE default()
+
+BLOCK default {
+    MOVE RANDINT(4)
+    SAY $CRY
+}
+
+BLOCK test {
+
+}
+
+BLOCK greeting {
+    SAY("Why hello there!")
+}
+
+END_SCRIPT
 
 [ENTITIES]
 type, char, color, nature, cry, rarity
 player, @, white, none, none, none
-villager, v, white, friendly, 
+villager, v, white, friendly, "Hey there!"
 sheep, s, white, docile, "Meeehhh", common
 zombie, z, green, aggressive, "Brainss...", uncommon
 skeleton, s, white, aggressive, "...rattle", uncommon
 ghost, g, white, aggressive, "ooOooOo...", uncommon
-bogeyman, b, red, aggressive, "OOGABOOGAWOOGA!", very rare
+bogeyman, b, red, aggressive, "OOGABOOGAWOOGA!", veryrare
 mouse, m, grey, skittish, "squeek!", common
 rat, R, grey, aggressive, "SQUEEK!", uncommon
 scavenger,  S, green, neutral, "Need something?", rare

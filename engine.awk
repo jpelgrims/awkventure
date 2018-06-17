@@ -1,4 +1,4 @@
-#!/usr/bin/awk -f
+#!/usr/bin/gawk -f
 
 # Awkventure game engine
 # Requires gamelib.awk
@@ -6,12 +6,14 @@
 BEGIN {
 
 	# CONSTANTS & GLOBALS
+	INTRO_FLAG = 1
 
 	# Player position
 	player_x = 2
 	player_y = 2
 
-	world_maps[0] = 0 
+	world_maps[0] = 0
+	scripts[0] = 0
 
 	# Worldmap
 	WORLD_MAP[0] = 0
@@ -21,17 +23,8 @@ BEGIN {
 
 
 	# Entities
-	entities[0] = 0
-	nr_of_entities = 0
-
+	entities["length"] = 0
 	add_entity("player", player_x, player_y)
-
-	# Screen
-	CURRENT_SCREEN[0] = 0
-	SCREEN_BUFFER[0] = 0
-
-
-
 }
 
 /^\[GAME\]/ {
@@ -65,14 +58,11 @@ BEGIN {
 }
 
 /^\[LEVEL [0-9]+: SCRIPT\]/ {
-	match($0, /([0-9]+)/)
-	level_nr = substr($0, RSTART, RLENGTH)
+	match($0, /([0-9]+)/, groups)
+	level_nr = groups[1]
 
-	load_block(script)
-
-	for(i in script) {
-		world_maps[level_nr, "script", settings[i]] = script[i]
-	}
+	script = load_script()
+	scripts["level"][level_nr] = script
 }
 
 /^\[ENTITIES\]/ {
@@ -94,40 +84,70 @@ BEGIN {
 
 END {
 
-	# Show game title
-	subtext_nr = randint(1, array_length(subtexts))
-	render_banner(banner, subtexts[subtext_nr], screen_width, screen_height)
-	system("sleep 2")
-	cls()
-
-	# Show game story
-	for (i in story) {
-		story_line = center(story[i], screen_width)
-		print_at_row(story_line, 12+i)
-		system("sleep 2")
-	}
-	system("sleep 5")
-
-	# Press key to start message
-	press_key_line = center("PRESS ANY KEY TO START", screen_width)
-	print_at_row(press_key_line, 24)
-	system("sleep 1")
-
 	# Basic console setup
-	printf "\033[?25l" # Hide the cursor
+	hide_cursor()
 	system("stty -echo")
 	cls()
 
+	if (INTRO_FLAG) {
+		# Show game title
+		subtext_nr = randint(0, array_length(subtexts))
+		
+		for(i=0;i<=200;i+=5) {
+			
+			set_foreground_color(i, 0, 0)
+			for(y=0;y<length(banner);y++) {
+				move_cursor(0, (screen_height-12)/2+y)
+				center(banner[y], screen_width)
+			}
+			sleep(0.05)
+		}
+		
+		sleep(2)
+		cls()
+
+		# Show game story
+		for (i in story) {
+			move_cursor(4, (screen_height-8)/2+i)
+			split(story[i], words," ")
+			for (w in words) {
+
+				for (o=1;o<=length(words[w]);o++) {
+					char = substr(words[w], o, 1)
+					if (char != ".") {
+						fade_in(char)
+						sleep(0.03)
+					} else {
+						printf char
+						sleep(1.5)
+					}
+					
+				}
+				sleep(0.05)
+				printf " "
+			}
+			
+		}
+		show_cursor()
+		printf "\n\n   Press any key to start"
+		get_input()
+		hide_cursor()
+
+	}
+	
 	set_level(1)
+	cls()
+	render()
 
 	while(1) {
 		handle_input()
 		#update()
 
-		update_screen_buffer()
-		render_screen_buffer()
+		
+		render()
+		flip_buffer()
 
-		system("sleep 0.01")
+		sleep(0.01)
 	}
 	system("reset")
 }

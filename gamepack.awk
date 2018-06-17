@@ -21,8 +21,8 @@ function load_csv(storage_array) {
             char = trim(a[2])
             
 			for (i in headers) {
-				storage_array[type, headers[i]] = a[i]
-                storage_array[char, headers[i]] = a[i]
+				storage_array[type][headers[i]] = a[i]
+                storage_array[char][headers[i]] = a[i]
 			}
         
 		}	
@@ -39,6 +39,19 @@ function readline() {
 	} else {
 		return 1
 	}
+}
+
+function load_script(   script) {
+	script = "" 
+	do {
+		EOF = !getline
+		if (EOF) {
+			exit
+		}
+
+		script = script "\n" $0
+	} while (trim($0) != "END_SCRIPT")
+	return script
 }
 
 # Function that loads lines until an empty line is found
@@ -68,22 +81,25 @@ function load_map(level_nr,   map_width, map_height) {
 	map_height = 0
 
 	while(readline()) {
-		line = trim($0)
+		line = $0
 		
 		if (map_width == 0) {
 			map_width = length(line)
-			world_maps[level_nr, x, map_height] = substr(line, x, 1)
+			for (x=0; x < map_width; x++) {
+				world_maps[level_nr][x][map_height] = substr(line, x, 1)
+			}
 			map_height++
 		} else if (map_width != 0 && length(line) == map_width) {
-			for (x=0; x <= map_width; x++) {
-				world_maps[level_nr, x, map_height] = substr(line, x, 1)
+			for (x=0; x < map_width; x++) {
+				world_maps[level_nr][x][map_height] = substr(line, x, 1)
 			}
 			map_height++
 		} else {
 			print "Game map is jagged, please check " FILENAME " for errors"
+			system("sleep 5")
 		}
 	}
 
-	world_maps[level_nr, "map_width"] = map_width
-	world_maps[level_nr, "map_height"] = map_height
+	world_maps[level_nr]["map_width"] = map_width
+	world_maps[level_nr]["map_height"] = map_height
 }
