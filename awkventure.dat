@@ -2,7 +2,6 @@
 Name = Awkventure
 
 [SUBTEXTS]
-I should've been studying - instead I made this
 Test subtext please ignore
 
 [BANNER]
@@ -20,8 +19,6 @@ a daring adventure to find and destroy the source of this
 great evil.
 
 [CREDITS]
-This game was built by Jelle Pelgrims.
-Thank you for playing!
 
 
 [KEYBINDINGS]
@@ -110,6 +107,7 @@ ground, ., white, black, false, NONE
 wall, #, white, brown, true, NONE
 staircase_up, >, white, brown, false, NEXT_LEVEL
 staircase_down, <, white, brown, false, PREVIOUS_LEVEL
+cave, O, white, grey, false, GENERATE_CAVE_LEVEL
 chest, =, brown, true, LOOT
 locked chest, =, brown, true, LOCKED_LOOT
 trap, ., white, black, false, TRAP

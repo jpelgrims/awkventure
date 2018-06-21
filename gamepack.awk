@@ -1,4 +1,4 @@
-# Function that loads csv foramtted lines into dict, with type and char as keys
+# Function that loads csv formatted lines into dict, with type and char as keys
 function load_csv(storage_array) {
     getline
 

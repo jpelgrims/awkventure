@@ -1,5 +1,4 @@
-# Game functions library
-# Requires stdlib.awk
+@include "stdlib"
 
 function add_entity(type, pos_x, pos_y) {
 	id = nr_of_entities()

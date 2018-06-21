@@ -1,7 +1,9 @@
 #!/usr/bin/gawk -f
 
-# Awkventure game engine
-# Requires gamelib.awk
+@include "gamelib"
+@include "gamepack"
+@include "stdlib"
+@include "console"
 
 BEGIN {
 
