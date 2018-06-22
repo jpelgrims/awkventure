@@ -1,5 +1,3 @@
-@include "stdlib"
-
 function create_world(width, height, fill_tile,    terrain, x, y) {
     terrain["width"] = width 
     terrain["height"] = height 

@@ -1,5 +1,3 @@
-@include "stdlib"
-
 function add_entity(type, pos_x, pos_y) {
 	id = nr_of_entities()
 	entities[id]["type"] = type
@@ -38,9 +36,7 @@ function use_item(user_id, item) {
 
 }
 
-function handle_input(   key) {
-	key = get_input()
-
+function handle_input(key) {
 	if (length(key) != 0) {
 		
 		x = entities[0]["x"]

@@ -2,8 +2,10 @@ function setch(char, x, y) {
     SCREEN_BUFFER[x][y] = char
 }
 
-function get_input(   input) {
-	system("stty -echo") # turn off echo
+function get_input(echo,   input) {
+    if (echo == 1) {
+        system("stty -echo") # turn off echo
+    }
 	cmd = "bash -c 'read -n 1 input; echo $input'"
 	cmd | getline input
 	close(cmd)

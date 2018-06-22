@@ -1,12 +1,11 @@
 #!/usr/bin/gawk -f
 
-@include "gamelib"
-@include "gamepack"
-@include "stdlib"
-@include "console"
+#@include "gamelib.awk"
+#@include "gamepack"
+#@include "stdlib"
+#@include "console"
 
 BEGIN {
-
 	# CONSTANTS & GLOBALS
 	INTRO_FLAG = 1
 
@@ -88,7 +87,11 @@ END {
 
 	# Basic console setup
 	hide_cursor()
-	system("stty -echo")
+	if (TELNET_FLAG) {
+		printf "\377\375\042\377\373\001"
+	} else {
+		system("stty -echo")
+	}
 	cls()
 
 	if (INTRO_FLAG) {
@@ -136,16 +139,18 @@ END {
 		hide_cursor()
 
 	}
-	
+
 	set_level(1)
 	cls()
 	render()
 
+	
 	while(1) {
-		handle_input()
-		#update()
 
-		
+		key = get_input(0)
+		handle_input(key)
+
+		#update()
 		render()
 		flip_buffer()
 
