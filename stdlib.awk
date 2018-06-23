@@ -27,3 +27,8 @@ function array_length(array,   l) {l = 0; for (item in array) {l++}; return l}
 # Randomness
 
 function randint(min, max) {return int(((rand()*100) % (max -  min + 1)) + min)}
+
+# Math
+
+function min(x, y) { return x < y ? x : y }
+function max(x, y) { return x < y ? y : x }

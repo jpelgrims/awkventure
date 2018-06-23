@@ -68,8 +68,8 @@ function nr_of_entities() {
 
 function render() {
 	# Render world
-	for (y=0; y<=world_height;y++) {
-		for (x=0;x<=world_width;x++) {
+	for (y=0; y<=viewport_height;y++) {
+		for (x=0;x<=viewport_width;x++) {
 			setch(WORLD_MAP[x][y], x, y)
 		}
 	}
