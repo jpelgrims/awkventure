@@ -6,8 +6,13 @@
 #@include "console"
 
 BEGIN {
+	# Seed random number generator with day+time
+	srand()
+
 	# CONSTANTS & GLOBALS
 	INTRO_FLAG = 1
+	viewport_height = screen_height-2
+	viewport_width = screen_width
 
 	# Player position
 	player_x = 2
@@ -88,7 +93,9 @@ END {
 	# Basic console setup
 	hide_cursor()
 	if (TELNET_FLAG) {
+		# Set telnet char mode, i.e. client will only read one character before sending to server
 		printf "\377\375\042\377\373\001"
+		# Find console size with "\033[s\033[999;999H\033[6n\033[u"
 	} else {
 		system("stty -echo")
 	}
@@ -141,6 +148,10 @@ END {
 	}
 
 	set_level(1)
+	world_height = viewport_height
+	world_width = viewport_width
+	delete WORLD_MAP
+	generate_dungeon(WORLD_MAP, world_width, world_height, 30, 6, 10)
 	cls()
 	render()
 

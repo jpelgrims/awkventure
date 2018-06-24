@@ -66,11 +66,15 @@ function nr_of_entities() {
 	return entities["length"]
 }
 
-function render() {
+function render(   x, y, i, a, char) {
 	# Render world
 	for (y=0; y<=viewport_height;y++) {
 		for (x=0;x<=viewport_width;x++) {
-			setch(WORLD_MAP[x][y], x, y)
+			char = WORLD_MAP[x][y]
+			front_color = TILE_DATA[char]["front_color"]
+			back_color = TILE_DATA[char]["back_color"]
+			setch_color(char, x, y, front_color, back_color)
+			#setch(char, x, y)
 		}
 	}
 
@@ -80,7 +84,8 @@ function render() {
 		x = entities[i]["x"]
 		y = entities[i]["y"]
 		char = ENTITY_DATA[type]["char"]
-		setch(char, x, y)
+		front_color = ENTITY_DATA[type]["color"]
+		setch_color(char, x, y, front_color, "black")
 	}
 }
 

@@ -1,5 +1,27 @@
+BEGIN {
+    COLOR["green"] = "0,255,0"
+    COLOR["blue"] = "0,0,255"
+    COLOR["red"] = "255,0,0"
+    COLOR["white"] = "255,255,255"
+    COLOR["black"] = "0,0,0"
+    COLOR["grey"] = "169,169,169"
+    COLOR["brown"] = "165,42,42"
+    COLOR["yellow"] = "255,255,0"
+}
+
 function setch(char, x, y) {
     SCREEN_BUFFER[x][y] = char
+}
+
+function setch_color(char, x, y, front, back,    back_rgb, front_rgb) {
+    split(COLOR[front],a,",")
+    front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
+    split(COLOR[back],a,",")
+    back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
+    SCREEN_BUFFER[x][y] = front_rgb back_rgb char
+    #printf front_rgb
+    #print("test " back " " COLOR[back] " " a[1] " " a[2] " " a[3] " " front_rgb back_rgb "t")
+    #sleep(1)
 }
 
 function get_input(echo,   input) {
@@ -24,7 +46,7 @@ function fade_in(char,   i) {
 }
 
 function putch(char, x, y) {
-    printf "\033[%s;%sH%c", y+1, x, char
+    printf "\033[%s;%sH%s", y+1, x, char
 }
 
 function cls() {
