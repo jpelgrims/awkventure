@@ -21,8 +21,8 @@ function run_script(script,    script_line, groups) {
         
         # SET_<ATTRIBUTE> <value>
         else if (match(script_line, /^SET_([A-Z]+) (.+)/, groups)) {
-            entity_nr = length(entities)
-            entities[entity_nr][tolower(groups[1])] = groups[2]
+            entity_nr = length(ENTITIES)
+            ENTITIES[entity_nr][tolower(groups[1])] = groups[2]
         }
 	}
 }

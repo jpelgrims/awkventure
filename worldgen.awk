@@ -83,8 +83,8 @@ function generate_dungeon(terrain, width, height, max_rooms, room_min_size, room
             center_y = int((y+ (y+h)) /2 )
 
             if (num_rooms == 0) {
-                entities[0]["x"] = center_x
-                entities[0]["y"] = center_y
+                ENTITIES[0]["x"] = center_x
+                ENTITIES[0]["y"] = center_y
             } else {
 
                 prev_x = rooms[num_rooms-1]["center_x"]

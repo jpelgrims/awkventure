@@ -1,9 +1,9 @@
 function add_entity(type, pos_x, pos_y) {
 	id = nr_of_entities()
-	entities[id]["type"] = type
-	entities[id]["x"] = pos_x
-	entities[id]["y"] = pos_y
-	entities["length"]++
+	ENTITIES[id]["type"] = type
+	ENTITIES[id]["x"] = pos_x
+	ENTITIES[id]["y"] = pos_y
+	ENTITIES["length"]++
 	return id
 }
 
@@ -15,17 +15,34 @@ function add_item(type, pos_x, pos_y) {
 
 }
 
+function is_visible(x, y) {
+	return VISIBLE_MAP[x][y] == 1
+}
 
-function is_blocked(x, y) {
+function is_memorized(x, y) {
+	return MEMORY_MAP[x][y] == 1
+}
+
+function is_blocked(x, y, type,    entity_blocked, tile_blocked) {
+	entity_blocked = 0
+	tile_blocked = 0
+
 	for (i=0; i<nr_of_entities(); i++) {
-		
-		if (entities[i]["x"] == x && entities[i]["y"] == y) {
-			return 1
+		if (ENTITIES[i]["x"] == x && ENTITIES[i]["y"] == y) {
+			entity_blocked = 1
 		}
 	}
 
 	char = WORLD_MAP[x][y]
-	return TILE_DATA[char]["blocked"] == "true"
+	tile_blocked = TILE_DATA[char]["blocked"] == "true"
+
+	if (type == "tile") {
+		return tile_blocked
+	} else if (type == "entity") {
+		return entity_blocked
+	} else {
+		return tile_blocked || entity_blocked
+	}
 }
 
 function activate_tile(activator_id, x, y) {
@@ -39,8 +56,8 @@ function use_item(user_id, item) {
 function handle_input(key) {
 	if (length(key) != 0) {
 		
-		x = entities[0]["x"]
-		y = entities[0]["y"]
+		x = ENTITIES[0]["x"]
+		y = ENTITIES[0]["y"]
 		
 		if (key == KEY["UP"]) { y-- }  
 		else if (key == KEY["DOWN"]) { y++ } 
@@ -56,42 +73,16 @@ function handle_input(key) {
 		}
 		
 		if (is_blocked(x, y) == 0) {
-			entities[0]["x"] = x
-			entities[0]["y"] = y
+			ENTITIES[0]["x"] = x
+			ENTITIES[0]["y"] = y
 		}
 	}
 }
 
 function nr_of_entities() {
-	return entities["length"]
+	return ENTITIES["length"]
 }
 
-function render(   x, y, i, a, char) {
-	# Render world
-	for (y=0; y<=viewport_height;y++) {
-		for (x=0;x<=viewport_width;x++) {
-			char = WORLD_MAP[x][y]
-			front_color = TILE_DATA[char]["front_color"]
-			back_color = TILE_DATA[char]["back_color"]
-			setch_color(char, x, y, front_color, back_color)
-			#setch(char, x, y)
-		}
-	}
-
-	# Render entities
-	for (i=0; i<nr_of_entities();i++) {
-		type = entities[i]["type"]
-		x = entities[i]["x"]
-		y = entities[i]["y"]
-		char = ENTITY_DATA[type]["char"]
-		front_color = ENTITY_DATA[type]["color"]
-		setch_color(char, x, y, front_color, "black")
-	}
-}
-
-function camera_view() {
-
-}
 
 function update() {
 

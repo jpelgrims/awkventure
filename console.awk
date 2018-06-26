@@ -13,15 +13,23 @@ function setch(char, x, y) {
     SCREEN_BUFFER[x][y] = char
 }
 
-function setch_color(char, x, y, front, back,    back_rgb, front_rgb) {
-    split(COLOR[front],a,",")
-    front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
-    split(COLOR[back],a,",")
-    back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
+function setch_color(char, x, y, front, back,   back_rgb, front_rgb) {
+    
+    if (front) {
+        split(COLOR[front],a,",")
+        front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
+    } else {
+        front_rgb = ""
+    }
+    
+    if (back) {
+        split(COLOR[back],a,",")
+        back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
+    } else {
+        back_rgb = ""
+    }
+    
     SCREEN_BUFFER[x][y] = front_rgb back_rgb char
-    #printf front_rgb
-    #print("test " back " " COLOR[back] " " a[1] " " a[2] " " a[3] " " front_rgb back_rgb "t")
-    #sleep(1)
 }
 
 function get_input(echo,   input) {

@@ -86,7 +86,7 @@ END_SCRIPT
 [ENTITIES]
 type, char, color, nature, cry, rarity
 player, @, white, none, none, none
-villager, v, white, friendly, "Hey there!"
+villager, ☺, white, friendly, "Hey there!"
 sheep, s, white, docile, "Meeehhh", common
 zombie, z, green, aggressive, "Brainss...", uncommon
 skeleton, s, white, aggressive, "...rattle", uncommon
@@ -103,14 +103,12 @@ snake, ~, green, aggressive, "hsssss!", common
 
 [TILES]
 type, char, front_color, back_color, blocked, action
-ground, ., white, black, false, NONE
-wall, #, white, brown, true, NONE
+ground, ., grey, black, false, NONE
+wall, ♣, green, black, true, NONE
 staircase_up, >, white, brown, false, NEXT_LEVEL
 staircase_down, <, white, brown, false, PREVIOUS_LEVEL
 cave, O, white, grey, false, GENERATE_CAVE_LEVEL
 chest, =, brown, true, LOOT
-locked chest, =, brown, true, LOCKED_LOOT
-trap, ., white, black, false, TRAP
 
 [ITEMS]
 type, char, front_color, effect

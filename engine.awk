@@ -10,9 +10,8 @@ BEGIN {
 	srand()
 
 	# CONSTANTS & GLOBALS
-	INTRO_FLAG = 1
 	viewport_height = screen_height-2
-	viewport_width = screen_width
+	viewport_width = screen_width-20
 
 	# Player position
 	player_x = 2
@@ -29,7 +28,7 @@ BEGIN {
 
 
 	# Entities
-	entities["length"] = 0
+	ENTITIES["length"] = 0
 	add_entity("player", player_x, player_y)
 }
 
@@ -92,11 +91,7 @@ END {
 
 	# Basic console setup
 	hide_cursor()
-	if (TELNET_FLAG) {
-		# Set telnet char mode, i.e. client will only read one character before sending to server
-		printf "\377\375\042\377\373\001"
-		# Find console size with "\033[s\033[999;999H\033[6n\033[u"
-	} else {
+	if (!TELNET_FLAG) {
 		system("stty -echo")
 	}
 	cls()
@@ -155,16 +150,13 @@ END {
 	cls()
 	render()
 
-	
+
 	while(1) {
 
 		key = get_input(0)
 		handle_input(key)
-
 		#update()
 		render()
-		flip_buffer()
-
 		sleep(0.01)
 	}
 	system("reset")
