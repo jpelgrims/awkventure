@@ -9,24 +9,39 @@ function create_world(terrain, width, height, fill_tile,    x, y) {
     }
 }
 
-function generate_random_walk_cave(terrain, width, height, x, y, length_of_walk,    i) {
+function generate_random_walk_cave(terrain, width, height, x, y, length_of_walk,    i, t) {
     create_world(terrain, width, height, "wall")
+    terrain[x][y] = TILE_DATA["ground"]["char"]
 
-    for (i=0; i<length_of_path; i++) {
+    for (i=0; i<length_of_walk; i++) {
 
         t = randint(1,4)
 
-        if (t == 1 && (x+1) > width-2) {
+        if (t == 1 && (x+1 < width-2)) {
             x += 1
-        } else if (t == 2 && (x-1) < 1) {
+        } else if (t == 2 && (x-1) > 1) {
             x -= 1
-        } else if (t == 3 && (y+1) > height-2) {
+        } else if (t == 3 && (y+1) < (height-2)) {
             y += 1
-        } else if (t == 4 && (y-1) < 1) {
+        } else if (t == 4 && (y-1) > 1) {
             y -= 1
         }
 
         terrain[x][y] = TILE_DATA["ground"]["char"]
+        
+    }
+}
+
+function generate_border(terrain, width, height) {
+    for(y=0;y<height;y++) {
+        if (y == 0 || y == height-1) {
+            for (x=0;x<width;x++) {
+                terrain[x][y] = TILE_DATA["wall"]["char"]
+            }
+        } else {
+            terrain[0][y] = TILE_DATA["wall"]["char"]
+            terrain[width-1][y] = TILE_DATA["wall"]["char"]
+        }
     }
 }
 
@@ -58,7 +73,7 @@ function generate_dungeon(terrain, width, height, max_rooms, room_min_size, room
         h = randint(room_min_size, room_max_size)
 
         x = randint(0, width - w - 1)
-        y = randint(0, height - g - 1)
+        y = randint(0, height - h - 1)
 
         collision = 0
 

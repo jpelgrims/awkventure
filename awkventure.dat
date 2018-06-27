@@ -58,7 +58,9 @@ SPAWN mouse spider
 
 END_SCRIPT
 
-
+[LEVEL 2: SCRIPT]
+GENERATE dungeon 30,30,30,6,10
+END_SCRIPT
 
 
 

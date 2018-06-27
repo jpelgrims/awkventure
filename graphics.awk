@@ -63,10 +63,6 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 	uniq_entities = ""
 	uniq_tiles = ""
 
-	for (i=0;i<screen_height;i++) {
-		setch("              ", screen_width- 18, i)
-	}
-
 	for (i=0; i<nr_of_entities();i++) {
         x = ENTITIES[i]["x"]
         y = ENTITIES[i]["y"]
@@ -94,7 +90,7 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 		color = ENTITY_DATA[type]["color"]
 		y = i
 		setch_color(char, x, y, color, "black")
-		setch_color(type "    ", x+4, y, "white", "black")
+		put_color(type, x+4, y, "white", "black")
 	}
 	
 	for (i=1; i<=length(uniq_tiles);i++) {
@@ -104,11 +100,15 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 		back_color = TILE_DATA[type]["back_color"]
 		y = i + length(uniq_entities) + 1
 		setch_color(char, x, y, front_color, back_color)
-		setch_color(type "    ", x+4, y, "white", "black")
+		put_color(type, x+4, y, "white", "black")
 	}
 }
 
 function render_tile(world_x, world_y, screen_x, screen_y) {
+	if (screen_x >= viewport_width || screen_y >= viewport_height) {
+		return
+	}
+
 	if (is_visible(world_x, world_y) || is_memorized(world_x, world_y)) {
 		char = WORLD_MAP[world_x][world_y]
 		
@@ -120,7 +120,7 @@ function render_tile(world_x, world_y, screen_x, screen_y) {
 			back_color = TILE_DATA[char]["back_color"]
 		}
 		
-		setch_color(char, screen_x, screen_y, front_color, back_color)
+		put_color(char, screen_x, screen_y, front_color, back_color)
 	}
 }
 
@@ -169,7 +169,7 @@ function camera_view(focus_x, focus_y) {
             front_color = ENTITY_DATA[type]["color"]
 			screen_x = get_screen_x(x, focus_x)
 			screen_y = get_screen_y(y, focus_y)
-            setch_color(char, screen_x, screen_y, front_color, 0)
+            put_color(char, screen_x, screen_y, front_color, 0)
         }
 	}
 }

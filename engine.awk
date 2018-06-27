@@ -146,7 +146,11 @@ END {
 	world_height = viewport_height
 	world_width = viewport_width
 	delete WORLD_MAP
+	#generate_random_walk_cave(WORLD_MAP, world_width, world_height, 3, 3, 1000)
+	#ENTITIES[0]["x"] = 5
+    #ENTITIES[0]["y"] = 5
 	generate_dungeon(WORLD_MAP, world_width, world_height, 30, 6, 10)
+	generate_border(WORLD_MAP, world_width, world_height)
 	cls()
 	render()
 
