@@ -161,7 +161,6 @@ END {
 		handle_input(key)
 		#update()
 		render()
-		sleep(0.01)
 	}
 	system("reset")
 }

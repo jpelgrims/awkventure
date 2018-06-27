@@ -59,10 +59,10 @@ function handle_input(key) {
 		x = ENTITIES[0]["x"]
 		y = ENTITIES[0]["y"]
 		
-		if (key == KEY["UP"]) { y-- }  
-		else if (key == KEY["DOWN"]) { y++ } 
-		else if (key == KEY["LEFT"]) { x-- } 
-		else if (key == KEY["RIGHT"]) { x++} 
+		if (key == KEY["UP"] || match(key, /\[A/)) { y-- }  
+		else if (key == KEY["DOWN"] || match(key, /\[B/)) { y++ } 
+		else if (key == KEY["LEFT"] || match(key, /\[D/)) { x-- } 
+		else if (key == KEY["RIGHT"] || match(key, /\[C/)) { x++} 
 		else if (key == KEY["QUIT"]) {
 			
 			cls()

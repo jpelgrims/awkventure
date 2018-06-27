@@ -59,14 +59,21 @@ function setch_color(char, x, y, front, back,   back_rgb, front_rgb) {
     SCREEN_BUFFER[x][y] = front_rgb back_rgb char
 }
 
-function get_input(echo,   input) {
+function get_input(echo,   arrow, key) {
+    # Turn off console echo if requested
     if (echo == 1) {
-        system("stty -echo") # turn off echo
+        system("stty -echo") 
     }
-	cmd = "bash -c 'read -n 1 input; echo $input'"
-	cmd | getline input
-	close(cmd)
-	return input
+
+    # Clear stdin
+    system("bash -c 'read -n 1000 -t 0.0001 -s'") 
+
+    # Read up to three characters (arrow keys are 3)
+    cmd = "bash -c 'if read -n 1 key; then read -n 2 -t 0.00005 char; fi; echo $key$char'"
+    cmd | getline key
+    close(cmd)
+
+    return key
 }
 
 function fade_in(char,   i) {
