@@ -63,6 +63,10 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 	uniq_entities = ""
 	uniq_tiles = ""
 
+	for (i=0;i<screen_height;i++) {
+		setch("              ", screen_width- 18, i)
+	}
+
 	for (i=0; i<nr_of_entities();i++) {
         x = ENTITIES[i]["x"]
         y = ENTITIES[i]["y"]
@@ -76,63 +80,86 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 	for (y=0; y<=viewport_height;y++) {
 		for (x=0;x<=viewport_width;x++) {
 			char = WORLD_MAP[x][y]
-			if (!index(uniq_tiles, char) && char && is_visible(x, y)) {
+			if (!index(uniq_tiles, char) && is_visible(x, y)) {
 				uniq_tiles = uniq_tiles char
 			}
 		}
 	}
+
+	x = screen_width - 18
 			
 	for (i=1; i<=length(uniq_entities);i++) {
 		char = substr(uniq_entities,i,1)
 		type = ENTITY_DATA[char]["type"]
 		color = ENTITY_DATA[type]["color"]
-		x = screen_width - 18
 		y = i
 		setch_color(char, x, y, color, "black")
-		setch_color("   " type, x+1, y, "white", "black")
+		setch_color(type "    ", x+4, y, "white", "black")
 	}
-
+	
 	for (i=1; i<=length(uniq_tiles);i++) {
 		char = substr(uniq_tiles,i,1)
 		type = TILE_DATA[char]["type"]
 		front_color = TILE_DATA[type]["front_color"]
 		back_color = TILE_DATA[type]["back_color"]
-		x = screen_width - 18
 		y = i + length(uniq_entities) + 1
 		setch_color(char, x, y, front_color, back_color)
-		setch_color("   " type, x+1, y, "white", "black")
+		setch_color(type "    ", x+4, y, "white", "black")
 	}
 }
 
-function clear_buffer() {
-	for (y=0; y<screen_height;y++) {
-		for (x=0;x<screen_width;x++) {
-			setch(" ", x, y)
+function render_tile(world_x, world_y, screen_x, screen_y) {
+	if (is_visible(world_x, world_y) || is_memorized(world_x, world_y)) {
+		char = WORLD_MAP[world_x][world_y]
+		
+		if (!is_visible(world_x, world_y) && is_memorized(world_x, world_y)) {
+			front_color = "dim_gray"
+			back_color = TILE_DATA[char]["back_color"]
+		} else {
+			front_color = TILE_DATA[char]["front_color"]
+			back_color = TILE_DATA[char]["back_color"]
+		}
+		
+		setch_color(char, screen_x, screen_y, front_color, back_color)
+	}
+}
+
+function render() {
+	player_x = ENTITIES[0]["x"]
+	player_y = ENTITIES[0]["y"]
+
+    clear_buffer()
+	calculate_room_LOS()
+    update_memory_map()
+	camera_view(player_x, player_y)
+	render_legend()
+	flip_buffer()
+}
+
+function get_screen_x(world_x, focus_x) {
+	middle_viewport_x = int(viewport_width/2)
+	screen_x = x - (focus_x - middle_viewport_x)	
+	return screen_x
+}
+
+function get_screen_y(world_y, focus_y) {
+	middle_viewport_y = int(viewport_height/2)
+	screen_y = y - (focus_y - middle_viewport_y)
+	return screen_y
+}
+
+function camera_view(focus_x, focus_y) {
+	# Draw tiles
+	for(x=max(0, focus_x - viewport_width); x < min(focus_x+viewport_width, world_width); x++) {
+		for(y=max(0, focus_y - viewport_height); y < max(focus_y+viewport_height, world_height); y++) {
+			char = WORLD_MAP[x][y]
+			screen_x = get_screen_x(x, focus_x)
+            screen_y = get_screen_y(y, focus_y)
+			render_tile(x, y, screen_x, screen_y)
 		}
 	}
-}
 
-function render_worldmap(   x, y, char, front_color, back_color) {
-	for (y=0; y<=viewport_height;y++) {
-		for (x=0;x<=viewport_width;x++) {
-			if (is_visible(x, y) || is_memorized(x, y)) {
-				char = WORLD_MAP[x][y]
-				
-                if (!is_visible(x, y) && is_memorized(x, y)) {
-                    front_color = "grey"
-				    back_color = TILE_DATA[char]["back_color"]
-                } else {
-                    front_color = TILE_DATA[char]["front_color"]
-				    back_color = TILE_DATA[char]["back_color"]
-                }
-                
-				setch_color(char, x, y, front_color, back_color)
-			}
-		}
-	}
-}
-
-function render_entities(   i, x, y, type, char, front_color) {
+	# Draw entities
 	for (i=0; i<nr_of_entities();i++) {
 		x = ENTITIES[i]["x"]
 		y = ENTITIES[i]["y"]
@@ -140,22 +167,9 @@ function render_entities(   i, x, y, type, char, front_color) {
             type = ENTITIES[i]["type"]
             char = ENTITY_DATA[type]["char"]
             front_color = ENTITY_DATA[type]["color"]
-            setch_color(char, x, y, front_color, 0)
+			screen_x = get_screen_x(x, focus_x)
+			screen_y = get_screen_y(y, focus_y)
+            setch_color(char, screen_x, screen_y, front_color, 0)
         }
-
 	}
-}
-
-function render() {
-    clear_buffer()
-	calculate_room_LOS()
-    update_memory_map()
-    render_worldmap()
-    render_entities()
-	render_legend()
-	flip_buffer()
-}
-
-function camera_view() {
-
 }

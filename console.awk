@@ -7,6 +7,7 @@ BEGIN {
     COLOR["grey"] = "169,169,169"
     COLOR["brown"] = "165,42,42"
     COLOR["yellow"] = "255,255,0"
+    COLOR["dim_gray"] = "105,105,105"
 }
 
 function setch(char, x, y) {
@@ -65,7 +66,6 @@ function move_cursor(x, y) {
     printf "\033[%s;%sH", y+1, x
 }
 
-# Moves cursor one back
 function revert_cursor(columns) {
     printf "\033[%sD", columns
 }
@@ -95,11 +95,19 @@ function print_at_row(line, row) {
 	print(line)
 }
 
-# Line-based buffer
+function clear_buffer() {
+    delete SCREEN_BUFFER
+    for (y=0; y<screen_height;y++) {
+		for (x=0;x<screen_width;x++) {
+            setch_color(" ", x, y, "black", "black")
+        }
+    }
+}
+
 function flip_buffer(   y, x) {
 	for (y=0; y<screen_height;y++) {
 		for (x=0;x<screen_width;x++) {
-            if (CURRENT_SCREEN[x][y] != SCREEN_BUFFER[x][y]) { # only print if screen line changed
+            if (CURRENT_SCREEN[x][y] != SCREEN_BUFFER[x][y]) {
 		        putch(SCREEN_BUFFER[x][y], x, y)
 				CURRENT_SCREEN[x][y] = SCREEN_BUFFER[x][y]
 			}

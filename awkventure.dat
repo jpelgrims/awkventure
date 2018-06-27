@@ -104,7 +104,7 @@ snake, ~, green, aggressive, "hsssss!", common
 [TILES]
 type, char, front_color, back_color, blocked, action
 ground, ., grey, black, false, NONE
-wall, ♣, green, black, true, NONE
+wall, #, white, black, true, NONE
 staircase_up, >, white, brown, false, NEXT_LEVEL
 staircase_down, <, white, brown, false, PREVIOUS_LEVEL
 cave, O, white, grey, false, GENERATE_CAVE_LEVEL
