@@ -11,6 +11,6 @@ function get_room_dimensions(x, y, room_data) {
 }
 
 function is_corridor(x, y) {
-	return (is_blocked(x-1, y) && is_blocked(x+1, y)) ||
-			(is_blocked(x, y-1) && is_blocked(x, y+1))
+	return (is_blocked(x-1, y, "tile") && is_blocked(x+1, y, "tile")) ||
+			(is_blocked(x, y-1, "tile") && is_blocked(x, y+1, "tile"))
 }
