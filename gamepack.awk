@@ -19,6 +19,8 @@ function load_csv(storage_array) {
             
             type = trim(a[1])
             char = trim(a[2])
+
+			storage_array["CHARSET"] = storage_array["CHARSET"] char
             
 			for (i in headers) {
 				storage_array[type][headers[i]] = a[i]
@@ -75,7 +77,37 @@ function load_ini(storage_array,   lines) {
 	}
 }
 
-# Function that loads an ascii map
+function load_art(entity_type, storage_array,   line, y, x, i) {
+	for (y=0;y<8;y++) {
+		for (x=0;x<8;x++) {
+			storage_array[entity_type]["art"][x][y] = " "
+		}
+	}
+
+	while(readline()) {
+		line = $0
+		match(line, /RGB\(([0-9]+,[0-9]+,[0-9]+)\)/, groups)
+		split(groups[1], a, ",")
+		r = a[1]
+		g = a[2]
+		b = a[3]
+
+		match(line, / ([0-9],[0-9].*)/, groups)
+		split(groups[1], positions, " ")
+		nr_of_matches = length(positions)
+
+		for (i=1;i<=nr_of_matches;i++) {
+			split(positions[i], a, ",")
+			x = a[1]
+			y = a[2]
+			char = storage_array[entity_type]["art"][x][y]
+			color = sprintf("\033[48;2;%s;%s;%sm", r, g, b)
+			storage_array[entity_type]["art"][x][y] = color char "\033[48;2;0;0;0m"
+		}
+	}
+
+}
+
 function load_map(level_nr,   map_width, map_height) {
 	map_width = 0
 	map_height = 0

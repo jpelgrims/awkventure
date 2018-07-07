@@ -8,33 +8,45 @@ BEGIN {
     COLOR["brown"] = "165,42,42"
     COLOR["yellow"] = "255,255,0"
     COLOR["dim_gray"] = "105,105,105"
+    COLOR["royal_blue"] = "17,30,108"
+    COLOR["yale_blue"] = "17,30,108"
+    COLOR["dark_slate_gray"] = "47,79,79"
+    COLOR["fuchsia"] = "255,0,255"
+    COLOR["olympic_blue"] = "0,142,204"
+    COLOR["azure_blue"] = "0,128,255"
+    COLOR["midnight_blue"] = "25,25,112"
+    COLOR["light_sky_blue"] = "135,206,250"
+    COLOR["light_steel_blue"] = "176,196,222"
+    COLOR["forest_green"] = "34,139,34"
 }
 
 function setch(char, x, y) {
     SCREEN_BUFFER[x][y] = char
 }
 
-function put_color(str, x, y, front, back, back_rgb, front_rgb, i) {
+function put_color(str, x, y, front, back,   back_rgb, front_rgb, i) {
     if (front) {
         split(COLOR[front],a,",")
-        front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
     } else {
-        front_rgb = ""
+        split(COLOR["white"],a,",")
     }
+    front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
     
     if (back) {
         split(COLOR[back],a,",")
-        back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
     } else {
-        back_rgb = ""
+        split(COLOR["black"],a,",")
     }
+    back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
     
     for (i=1;i<= min(screen_width, length(str));i++) {
         char = substr(str, i, 1)
         if (i==1) {
-            char = front_rgb back_rgb char
+            char = char
         }
-        SCREEN_BUFFER[x+i-1][y] = char
+        SCREEN_BUFFER[x+i-1][y] = front_rgb back_rgb char
+        CHAR_BUFFER[x+i-1][y] = char
+        COLOR_BUFFER[x+i-1][y] = front_rgb back_rgb
     }
 
     
@@ -44,19 +56,21 @@ function setch_color(char, x, y, front, back,   back_rgb, front_rgb) {
     
     if (front) {
         split(COLOR[front],a,",")
-        front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
     } else {
-        front_rgb = ""
+        split(COLOR["white"],a,",")
     }
+    front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
     
     if (back) {
         split(COLOR[back],a,",")
-        back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
     } else {
-        back_rgb = ""
+        split(COLOR["black"],a,",")
     }
+    back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
     
-    SCREEN_BUFFER[x][y] = front_rgb back_rgb char
+   SCREEN_BUFFER[x+i-1][y] = front_rgb back_rgb char
+    CHAR_BUFFER[x+i-1][y] = char
+    COLOR_BUFFER[x+i-1][y] = front_rgb back_rgb
 }
 
 function get_input(echo,   arrow, key) {
