@@ -143,7 +143,7 @@ function print_at_row(line, row) {
 function clear_buffer(   x, y) {
     for (y=0; y<screen_height;y++) {
 		for (x=0;x<screen_width;x++) {
-            setch_color(" ", x, y, "black", "black")
+            put_color(" ", x, y, "white", "black")
         }
     }
 }
