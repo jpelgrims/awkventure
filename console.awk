@@ -18,13 +18,14 @@ BEGIN {
     COLOR["light_sky_blue"] = "135,206,250"
     COLOR["light_steel_blue"] = "176,196,222"
     COLOR["forest_green"] = "34,139,34"
+    COLOR["menu_gray"] = "35,35,35"
 }
 
 function setch(char, x, y) {
     SCREEN_BUFFER[x][y] = char
 }
 
-function put_color(str, x, y, front, back,   back_rgb, front_rgb, i) {
+function put_color(str, x, y, front, back,   back_rgb, front_rgb, i, a, char) {
     if (front) {
         split(COLOR[front],a,",")
     } else {
@@ -45,15 +46,12 @@ function put_color(str, x, y, front, back,   back_rgb, front_rgb, i) {
             char = char
         }
         SCREEN_BUFFER[x+i-1][y] = front_rgb back_rgb char
-        CHAR_BUFFER[x+i-1][y] = char
-        COLOR_BUFFER[x+i-1][y] = front_rgb back_rgb
-    }
-
-    
+        #CHAR_BUFFER[x+i-1][y] = char
+        #COLOR_BUFFER[x+i-1][y] = front_rgb back_rgb
+    } 
 }
 
-function setch_color(char, x, y, front, back,   back_rgb, front_rgb) {
-    
+function setch_color(char, x, y, front, back,   back_rgb, front_rgb, a) {
     if (front) {
         split(COLOR[front],a,",")
     } else {
@@ -68,9 +66,9 @@ function setch_color(char, x, y, front, back,   back_rgb, front_rgb) {
     }
     back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
     
-   SCREEN_BUFFER[x+i-1][y] = front_rgb back_rgb char
-    CHAR_BUFFER[x+i-1][y] = char
-    COLOR_BUFFER[x+i-1][y] = front_rgb back_rgb
+    SCREEN_BUFFER[x+i-1][y] = front_rgb back_rgb char
+    #CHAR_BUFFER[x+i-1][y] = char
+    #COLOR_BUFFER[x+i-1][y] = front_rgb back_rgb
 }
 
 function get_input(echo,   arrow, key) {
@@ -90,7 +88,7 @@ function get_input(echo,   arrow, key) {
     return key
 }
 
-function fade_in(char,   i) {
+function fade_in(char,   i, step) {
     step = 1
     for (i=0;i<=255;i+=step) {
         set_foreground_color(i, i, i)
@@ -142,7 +140,7 @@ function print_at_row(line, row) {
 	print(line)
 }
 
-function clear_buffer() {
+function clear_buffer(   x, y) {
     for (y=0; y<screen_height;y++) {
 		for (x=0;x<screen_width;x++) {
             setch_color(" ", x, y, "black", "black")

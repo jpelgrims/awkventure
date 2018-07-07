@@ -26,7 +26,8 @@ function array_length(array,   l) {l = 0; for (item in array) {l++}; return l}
 
 # Randomness
 
-function randint(min, max) {return int(((rand()*100) % (max -  min + 1)) + min)}
+function randint(min, max) {return int((rand() * (max -  min + 1))) + min}
+function randchar(string) {return substr(string, randint(1, length(string)), 1)}
 
 # Math
 

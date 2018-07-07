@@ -1,5 +1,6 @@
-function add_entity(type, pos_x, pos_y, id) {
+function add_entity(type, pos_x, pos_y, id, idx) {
 	idx = nr_of_entities()
+
 	ENTITIES[idx]["type"] = type
 	ENTITIES[idx]["x"] = pos_x
 	ENTITIES[idx]["y"] = pos_y
@@ -47,7 +48,7 @@ function is_item(char) {
 	return index(ITEM_DATA["CHARSET"], char)
 }
 
-function is_blocked(x, y, type,    entity_blocked, tile_blocked) {
+function is_blocked(x, y, type,    char, entity_blocked, tile_blocked) {
 	entity_blocked = 0
 	tile_blocked = 0
 
@@ -136,7 +137,7 @@ function handle_input(idx, key) {
 }
 
 function nr_of_entities() {
-	return ENTITIES["length"]
+	return length(ENTITIES)-1
 }
 
 
@@ -152,6 +153,21 @@ function shutdown() {
 		system("stty echo")
 	}
 	exit 0
+}
+
+function spawn_monsters(   x, y, entity_char, toss, world_height, world_width, type) {
+	world_width = WORLD_MAP["width"]
+	world_height = WORLD_MAP["height"]
+	for (y=0; y<world_height;y++) {
+		for (x=0;x<world_width;x++) {
+			toss = randint(0,100)
+			if (toss >= 99 && !is_blocked(x, y)) {
+				entity_char = randchar(ENTITY_DATA["CHARSET"])
+				type = ENTITY_DATA[entity_char]["type"]
+				add_entity(type, x, y)
+			}
+		}
+	}
 }
 
 function set_level(level_nr) {

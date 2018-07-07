@@ -91,14 +91,14 @@ slime, s, green, docile, "blub..blub...", uncommon
 zombie, z, green, aggressive, "Brainss...", uncommon
 skeleton, y, white, aggressive, "...rattle", uncommon
 ghost, g, white, aggressive, "ooOooOo...", uncommon
-bogeyman, b, red, aggressive, "OOGABOOGAWOOGA!", veryrare
+bogeyman, b, blue, aggressive, "OOGABOOGAWOOGA!", veryrare
 mouse, m, grey, skittish, "squeek!", common
 rat, R, grey, aggressive, "SQUEEK!", uncommon
 scavenger,  S, green, neutral, "Need something?", rare
 spider, *, white, aggressive, none, common
 goblin, g, green, aggressive, "urrgh", uncommon
 troll, T, green, aggressive, "URRRGH!", rare
-dragon, D, green, aggressive, "ROAARRR!!!", legendary
+dragon, D, red, aggressive, "ROAARRR!!!", legendary
 snake, ~, green, aggressive, "hsssss!", common
 
 [ENTITY snake: ART]

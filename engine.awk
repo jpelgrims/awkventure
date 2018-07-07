@@ -161,6 +161,7 @@ END {
     #ENTITIES[0]["y"] = 5
 	generate_dungeon(WORLD_MAP, world_width, world_height, 30, 6, 10)
 	generate_border(WORLD_MAP, world_width, world_height)
+	spawn_monsters()
 	cls()
 
 	if (TELNET_FLAG) {

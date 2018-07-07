@@ -5,7 +5,7 @@ BEGIN {
 	CURRENT_MENU = "legend"
 
 	viewport_height = screen_height
-	viewport_width = screen_width-20
+	viewport_width = screen_width
 
 	middle_viewport_x = int(viewport_width/2)
 	middle_viewport_y = int(viewport_height/2)
@@ -72,11 +72,11 @@ function update_memory_map() {
 	}
 }
 
-function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, back_colo, i, x, y) {
+function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, back_color, color, i, x, y, menu_height) {
 	uniq_entities = ""
 	uniq_tiles = ""
 
-	put_color("      LEGEND      ", screen_width-18, 1, "black", "white")
+	# Enumerate different types of visible tiles & entities
 
 	for (i=0; i<nr_of_entities();i++) {
         x = ENTITIES[i]["x"]
@@ -97,15 +97,27 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 		}
 	}
 
-	x = screen_width - 18
-			
+	# Draw menu
+
+	put_color("      LEGEND      ", screen_width-19, 1, "black", "light_steel_blue")
+
+	menu_height = length(uniq_entities) + length(uniq_tiles) + 3
+
+	for(x=0; x<18;x++) {
+		for(y=0; y<menu_height;y++) {
+			put_color(" ", screen_width-x-2, y+2, "black", "menu_gray")
+		}
+	}
+
+	x = screen_width - 19
+
 	for (i=1; i<=length(uniq_entities);i++) {
 		char = substr(uniq_entities,i,1)
 		type = ENTITY_DATA[char]["type"]
 		color = ENTITY_DATA[type]["color"]
 		y = i + 2
-		setch_color(char, x, y, color, "black")
-		put_color(type, x+4, y, "white", "black")
+		put_color(char, x+2, y, color, "menu_gray")
+		put_color(type, x+4, y, "white", "menu_gray")
 	}
 	
 	for (i=1; i<=length(uniq_tiles);i++) {
@@ -114,8 +126,8 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 		front_color = TILE_DATA[type]["front_color"]
 		back_color = TILE_DATA[type]["back_color"]
 		y = i + length(uniq_entities) + 3
-		setch_color(char, x, y, front_color, back_color)
-		put_color(type, x+4, y, "white", "black")
+		put_color(char, x+2, y, front_color, back_color)
+		put_color(type, x+4, y, "white", "menu_gray")
 	}
 }
 
@@ -298,7 +310,7 @@ function camera_view(focus_x, focus_y) {
             front_color = ENTITY_DATA[type]["color"]
 			screen_x = get_screen_x(x, focus_x)
 			screen_y = get_screen_y(y, focus_y)
-            put_color(char, screen_x, screen_y, front_color, 0)
+            put_color(char, screen_x, screen_y, front_color)
         }
 	}
 }
