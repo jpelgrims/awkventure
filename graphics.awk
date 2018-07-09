@@ -12,30 +12,35 @@ BEGIN {
 }
 
 function draw_line_dda(x1, y1, x2, y2,   dx, dy, x, y, v, x_incr, y_incr) {
-	dx = x2-x1 
-	dy = y2-y1
+	dx = abs(x2-x1)
+	dy = abs(y2-y1)
 
-	steps = abs(dx) > abs(dy) ? abs(dx) : abs(dy)
-
-	if (steps > 0) {
-		x_incr = dx / steps
-		y_incr = dy / steps
+	if (dx >= dy) {
+		steps = dx
 	} else {
-		x_incr = 0
-		y_incr = 0
+		steps = dy
 	}
 
-	x = x1 
-	y = y1
+	if (steps == 0) {
+		# Do nothing
+	} else {
+		x_incr = (x2-x1) / steps
+		y_incr = (y2-y1) / steps
 
-	for (v=0;v < steps; v++) {
-		x += x_incr
-		y += y_incr
-		cur_x = int(x)
-		cur_y = int(y)
-		char = substr(SCREEN_BUFFER[cur_x][cur_y], length(SCREEN_BUFFER[cur_x][cur_y]), 1)
-		put_color(char, cur_x, cur_y, "white", "selection_gray")
+		x = x1 
+		y = y1
+
+		for (v=0;v < steps; v++) {
+			x += x_incr
+			y += y_incr
+			cur_x = round(x)
+			cur_y = round(y)
+			char = substr(SCREEN_BUFFER[cur_x][cur_y], length(SCREEN_BUFFER[cur_x][cur_y]), 1)
+			put_color(char, cur_x, cur_y, "white", "selection_gray")
+		}
 	}
+
+
 }
 
 function ray_cast(type, direction, origin_x, origin_y,   delta_x, delta_y, distance) {

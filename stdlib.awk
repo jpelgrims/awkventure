@@ -34,3 +34,6 @@ function randchar(string) {return substr(string, randint(1, length(string)), 1)}
 function min(x, y) { return x < y ? x : y }
 function max(x, y) { return x < y ? y : x }
 function abs(v) {return v < 0 ? -v : v}
+function round(nr) {
+    return int(sprintf("%d\n",nr + 0.5))
+}
