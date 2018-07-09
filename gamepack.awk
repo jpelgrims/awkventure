@@ -102,7 +102,7 @@ function load_art(entity_type, storage_array,   line, y, x, i) {
 			y = a[2]
 			char = storage_array[entity_type]["art"][x][y]
 			color = sprintf("\033[48;2;%s;%s;%sm", r, g, b)
-			storage_array[entity_type]["art"][x][y] = color char "\033[48;2;0;0;0m"
+			storage_array[entity_type]["art"][x][y] = color char sprintf("\033[48;2;%s;%s;%sm", 30, 30, 30)
 		}
 	}
 

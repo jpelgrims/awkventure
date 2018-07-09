@@ -19,6 +19,8 @@ BEGIN {
     COLOR["light_steel_blue"] = "176,196,222"
     COLOR["forest_green"] = "34,139,34"
     COLOR["menu_gray"] = "30,30,30"
+    COLOR["menu_white"] = "200,200,200"
+    COLOR["selection_gray"] = "70,70,70"
 }
 
 function setch(char, x, y) {

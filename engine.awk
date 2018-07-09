@@ -110,15 +110,7 @@ END {
 		# Show game title
 		subtext_nr = randint(0, array_length(subtexts))
 		
-		for(i=0;i<=200;i+=5) {
-			
-			set_foreground_color(i, 0, 0)
-			for(y=0;y<length(banner);y++) {
-				move_cursor(0, (screen_height-12)/2+y)
-				center(banner[y], screen_width)
-			}
-			sleep(0.05)
-		}
+		draw_banner()
 		
 		sleep(2)
 		cls()
@@ -152,7 +144,9 @@ END {
 
 	}
 
-	set_level(1)
+	#menu_loop()
+
+	#set_level(1)
 	world_height = viewport_height
 	world_width = viewport_width
 	delete WORLD_MAP
@@ -197,5 +191,56 @@ function multiplayer_loop() {
 		
 		#update()
 		render()
+	}
+}
+
+function draw_banner() {
+	for(y=0;y<length(banner);y++) {
+		move_cursor(0, (screen_height-12)/2+y)
+		center(banner[y], screen_width)
+	}
+}
+
+function draw_banner_faded() {
+	for(i=0;i<=200;i+=5) {
+		set_foreground_color(i, 0, 0)
+		draw_banner()
+		sleep(0.05)
+	}
+}
+
+function menu_loop() {
+	draw_banner_faded()
+	cursor_pos = 1
+	nr_of_menu_items = 4
+	while (1) {
+		#cls()
+		set_foreground_color(i, 0, 0)
+		draw_banner()
+		set_foreground_color(255, 255, 255)
+		move_cursor(0, 14)
+		center("Campaign mode", screen_width)
+		center("Dungeon mode ", screen_width)
+		center("Freeroam mode", screen_width)
+		center("Exit         ", screen_width)
+		putch(">", 32, 14+cursor_pos-1)
+
+		key = get_input(0)
+
+		if (key == KEY["UP"] || match(key, /\033\[A/)) {
+			if (cursor_pos > 1) {
+				cursor_pos-- 
+			}
+		} else if (key == KEY["DOWN"] || match(key, /\033\[B/)) {
+			if (cursor_pos < 4) {
+				cursor_pos++ 
+			}
+		} else if (match(key, /\033.*/)) {
+			print("x")
+			exit(0)
+			sleep(2)
+			shutdown()
+		}
+		sleep(0.01)
 	}
 }

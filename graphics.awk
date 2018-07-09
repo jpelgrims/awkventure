@@ -11,6 +11,33 @@ BEGIN {
 	middle_viewport_y = int(viewport_height/2)
 }
 
+function draw_line_dda(x1, y1, x2, y2,   dx, dy, x, y, v, x_incr, y_incr) {
+	dx = x2-x1 
+	dy = y2-y1
+
+	steps = abs(dx) > abs(dy) ? abs(dx) : abs(dy)
+
+	if (steps > 0) {
+		x_incr = dx / steps
+		y_incr = dy / steps
+	} else {
+		x_incr = 0
+		y_incr = 0
+	}
+
+	x = x1 
+	y = y1
+
+	for (v=0;v < steps; v++) {
+		x += x_incr
+		y += y_incr
+		cur_x = int(x)
+		cur_y = int(y)
+		char = substr(SCREEN_BUFFER[cur_x][cur_y], length(SCREEN_BUFFER[cur_x][cur_y]), 1)
+		put_color(char, cur_x, cur_y, "white", "selection_gray")
+	}
+}
+
 function ray_cast(type, direction, origin_x, origin_y,   delta_x, delta_y, distance) {
 	distance = 0
 
@@ -155,14 +182,22 @@ function render_info_menu(   x, pointer_char) {
 }
 
 function render_character_menu() {
-	put_color("    CHARACTER     ", screen_width-18, 1, "black", "white")
-	draw_art("entity", "player", screen_width-17, 3)
-	put_color("HP", screen_width-17, 12, "white", "black")
-	for (x=0;x<13;x++) {
+	put_color("    CHARACTER     ", screen_width-19, 1, "black", "light_steel_blue")
+
+	menu_height = 13
+	for(x=0; x<18;x++) {
+		for(y=0; y<menu_height;y++) {
+			put_color(" ", screen_width-x-2, y+2, "black", "menu_gray")
+		}
+	}
+
+	draw_art("entity", "player", screen_width-18, 3)
+	put_color("HP", screen_width-17, 12, "menu_white", "menu_gray")
+	for (x=0;x<11;x++) {
 		put_color(" ", screen_width-14+x, 12, "black", "forest_green")
 	}
-	put_color("MP", screen_width-17, 13, "white", "black")
-	for (x=0;x<13;x++) {
+	put_color("MP", screen_width-17, 13, "menu_white", "menu_gray")
+	for (x=0;x<11;x++) {
 		put_color(" ", screen_width-14+x, 13, "black", "midnight_blue")
 	}
 }
@@ -206,7 +241,7 @@ function render(entity_idx,    x, y) {
 	calculate_room_LOS()
     update_memory_map()
 	camera_view(x, y)
-	
+	draw_line_dda(middle_viewport_x, middle_viewport_y, POINTER_X, POINTER_Y)
 	render_menu()
 	#render_info_menu()
 	
@@ -248,7 +283,7 @@ function draw_art(type, name, x_pos, y_pos,   x, y, char) {
 			} else {
 				char = " "
 			}
-			
+			char = sprintf("\033[48;2;%s;%s;%sm", 30, 30, 30) char
 			# Draw char twice horizontally to make up for larger tile height
 			setch(char, x_pos+x*2, y_pos+y)
 			setch(char, x_pos+x*2+1, y_pos+y)
