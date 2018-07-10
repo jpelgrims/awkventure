@@ -85,21 +85,21 @@ BLOCK greeting {
 END_SCRIPT
 
 [ENTITIES]
-type, char, color, nature, cry, rarity
-player, @, white, none, "...", none
-slime, s, green, docile, "blub..blub...", uncommon
-zombie, z, green, aggressive, "Brainss...", uncommon
-skeleton, y, white, aggressive, "...rattle", uncommon
-ghost, g, white, aggressive, "ooOooOo...", uncommon
-bogeyman, b, blue, aggressive, "OOGABOOGAWOOGA!", veryrare
-mouse, m, grey, skittish, "squeek!", common
-rat, R, grey, aggressive, "SQUEEK!", uncommon
-scavenger, S, green, neutral, "Need something?", rare
-spider, *, white, aggressive, none, common
-goblin, g, green, aggressive, "urrgh", uncommon
-troll, T, green, aggressive, "URRRGH!", rare
-dragon, D, red, aggressive, "ROAARRR!!!", legendary
-snake, ~, green, aggressive, "hsssss!", common
+type, char, color, nature, cry, rarity, hp, str, def
+player, @, white, none, "...", none, 100, 10, 10
+slime, s, green, docile, "blub..blub...", uncommon, 40, 1, 10
+zombie, z, green, aggressive, "Brainss...", uncommon, 25, 4, 2
+skeleton, y, white, aggressive, "...rattle", uncommon, 20, 3, 1
+ghost, g, white, aggressive, "ooOooOo...", uncommon, 30, 5, 1
+bogeyman, b, blue, aggressive, "OOGABOOGAWOOGA!", veryrare, 50, 10, 10
+mouse, m, grey, skittish, "squeek!", common, 5, 1, 1
+rat, R, grey, aggressive, "SQUEEK!", uncommon, 15, 3, 2
+scavenger, S, green, neutral, "Need something?", rare, 35, 5, 4
+spider, *, white, aggressive, none, common, 10, 2, 1
+goblin, g, green, aggressive, "urrgh", uncommon, 30, 5, 6
+troll, T, green, aggressive, "URRRGH!", rare, 120, 15, 10
+dragon, D, red, aggressive, "ROAARRR!!!", legendary, 300, 30, 40
+snake, ~, green, aggressive, "hsssss!", common, 15, 10, 5
 
 [ENTITY snake: ART]
 RGB(127,0,0): 2,0 3,0

@@ -4,7 +4,10 @@ function add_entity(type, pos_x, pos_y, id, idx) {
 	ENTITIES[idx]["type"] = type
 	ENTITIES[idx]["x"] = pos_x
 	ENTITIES[idx]["y"] = pos_y
+	ENTITIES[idx]["hp"] = ENTITY_DATA[type]["hp"]
+
 	ENTITIES["length"]++
+	
 
 	ENTITY_ID_TO_INDEX[id] = idx
 	return idx
@@ -53,7 +56,7 @@ function is_blocked(x, y, type,    char, entity_blocked, tile_blocked) {
 	tile_blocked = 0
 
 	for (i=0; i<nr_of_entities(); i++) {
-		if (ENTITIES[i]["x"] == x && ENTITIES[i]["y"] == y) {
+		if (ENTITIES[i]["x"] == x && ENTITIES[i]["y"] == y && ENTITIES[i]["hp"] > 0) {
 			entity_blocked = 1
 		}
 	}
@@ -97,7 +100,7 @@ function handle_multiplayer_input(keys,   i, a, id, key, idx) {
 
 }
 
-function handle_input(idx, key) {
+function handle_input(idx, key,    str, entity_id) {
 	if (length(key) != 0) {
 
 		x = ENTITIES[idx]["x"]
@@ -132,6 +135,10 @@ function handle_input(idx, key) {
 			# Set Pointer position to player position
 			POINTER_X = middle_viewport_x
 			POINTER_Y = middle_viewport_y
+		} else if (is_blocked(x, y, "entity")) {
+			str = ENTITY_DATA["player"]["str"]
+			entity_id = get_entity_at(x, y)
+			attack_entity(entity_id, str)
 		}
 	}
 }
@@ -140,8 +147,96 @@ function nr_of_entities() {
 	return length(ENTITIES)-1
 }
 
+function get_entity_at(x, y,    i) {
+	# TODO: transform screen coords back to world coords and use that to get entity at x, y
+	for (i=0;i<nr_of_entities(); i++) {
+		if (ENTITIES[i]["x"] == x && ENTITIES[i]["y"] == y) {
+			return i
+		}
+	}
+	return 0
+}
 
-function update() {
+
+function update_entities(   i, x, y) {
+	for (i=1;i<nr_of_entities();i++) {
+		if (ENTITIES[i]["hp"] > 0) {
+			move_towards_player(i)
+		}
+	}
+}
+
+function move_entity(id, dx, dy,    x, y) {
+	x = ENTITIES[id]["x"] + dx 
+	y = ENTITIES[id]["y"] + dy
+	if (!is_blocked(x, y)) {
+		ENTITIES[id]["x"] += dx
+		ENTITIES[id]["y"] += dy
+	}
+}
+
+function attack_entity(entity_id, str,    damage) {
+	damage = randint(0, str)
+	ENTITIES[entity_id]["hp"] -= damage
+}
+
+function move_randomly(entity_id,   dx, dy) {
+	dx = randint(-1, 1)
+	dy = randint(-1, 1)
+
+	if (randint(0, 1)) {
+		move_entity(entity_id, dx, 0)
+	} else {
+		move_entity(entity_id, 0, dy)
+	}
+}
+
+function entity_distance(id, x_dest, y_dest,    distance) {
+	x = ENTITIES[id]["x"]
+	y = ENTITIES[id]["y"]
+	distance = abs(x_dest - x) + abs(y_dest - y)
+	return distance
+}
+
+function move_towards_player(entity_id,    x, y, dx, dy, type, str) {
+	x = ENTITIES[entity_id]["x"]
+	y = ENTITIES[entity_id]["y"]
+
+	distance_to_player = entity_distance(entity_id, ENTITIES[0]["x"], ENTITIES[0]["y"])
+
+	if (distance_to_player == 1) {
+		type = ENTITIES[entity_id]["type"]
+		str = ENTITY_DATA["type"]["str"]
+		attack_entity(0, str)
+
+	} else if (distance_to_player <= 10) {
+		# Move towards player
+		dx = 0
+		dy = 0
+
+		if (ENTITIES[0]["x"] > x) {
+			dx = 1
+		} else if (ENTITIES[0]["x"] < x) {
+			dx = -1
+		}
+
+		if (ENTITIES[0]["y"] > y) {
+			dy = 1
+		} else if (ENTITIES[0]["y"] < y) {
+			dy = -1
+		}
+
+		if (randint(0, 1)) {
+			move_entity(entity_id, dx, 0)
+		} else {
+			move_entity(entity_id, 0, dy)
+		}
+
+	} else {
+		move_randomly(entity_id)
+	}
+
+
 
 }
 

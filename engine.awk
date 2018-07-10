@@ -25,7 +25,6 @@ BEGIN {
 
 	# Entities
 	ENTITIES["length"] = 0
-	add_entity("player", player_x, player_y)
 }
 
 /^\[GAME\]/ {
@@ -96,6 +95,7 @@ BEGIN {
 
 
 END {
+	add_entity("player", player_x, player_y)
 
 	# Basic console setup
 	hide_cursor()
@@ -149,6 +149,8 @@ END {
 	#set_level(1)
 	world_height = viewport_height
 	world_width = viewport_width
+	POINTER_X = middle_viewport_x
+	POINTER_Y = middle_viewport_y
 	delete WORLD_MAP
 	#generate_random_walk_cave(WORLD_MAP, world_width, world_height, 3, 3, 1000)
 	#ENTITIES[0]["x"] = 5
@@ -176,7 +178,7 @@ function singleplayer_loop() {
 		key = get_input(0)
 		handle_input(0, key)
 		
-		#update()
+		update_entities()
 		render(0)
 	}
 }

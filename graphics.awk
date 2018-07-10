@@ -36,7 +36,11 @@ function draw_line_dda(x1, y1, x2, y2,   dx, dy, x, y, v, x_incr, y_incr) {
 			cur_x = round(x)
 			cur_y = round(y)
 			char = substr(SCREEN_BUFFER[cur_x][cur_y], length(SCREEN_BUFFER[cur_x][cur_y]), 1)
-			put_color(char, cur_x, cur_y, "white", "selection_gray")
+			put_color(char, cur_x, cur_y, "light_sky_blue", "selection_gray")
+			# TODO do this properly
+			if (char == "#") {
+				break
+			}
 		}
 	}
 
@@ -345,9 +349,16 @@ function camera_view(focus_x, focus_y) {
 		x = ENTITIES[i]["x"]
 		y = ENTITIES[i]["y"]
         if (is_visible(x, y)) {
-            type = ENTITIES[i]["type"]
-            char = ENTITY_DATA[type]["char"]
-            front_color = ENTITY_DATA[type]["color"]
+
+			if (ENTITIES[i]["hp"] > 0) {
+				type = ENTITIES[i]["type"]
+				char = ENTITY_DATA[type]["char"]
+				front_color = ENTITY_DATA[type]["color"]
+			} else {
+				char = ";"
+				front_color = "white"
+			}
+
 			screen_x = get_screen_x(x, focus_x)
 			screen_y = get_screen_y(y, focus_y)
             put_color(char, screen_x, screen_y, front_color)
