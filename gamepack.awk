@@ -80,7 +80,7 @@ function load_ini(storage_array,   lines) {
 function load_art(entity_type, storage_array,   line, y, x, i) {
 	for (y=0;y<8;y++) {
 		for (x=0;x<8;x++) {
-			storage_array[entity_type]["art"][x][y] = " "
+			storage_array[entity_type]["art"][x][y] = "30,30,30"
 		}
 	}
 
@@ -100,9 +100,7 @@ function load_art(entity_type, storage_array,   line, y, x, i) {
 			split(positions[i], a, ",")
 			x = a[1]
 			y = a[2]
-			char = storage_array[entity_type]["art"][x][y]
-			color = sprintf("\033[48;2;%s;%s;%sm", r, g, b)
-			storage_array[entity_type]["art"][x][y] = color char sprintf("\033[48;2;%s;%s;%sm", 30, 30, 30)
+			storage_array[entity_type]["art"][x][y] = r "," g "," b
 		}
 	}
 

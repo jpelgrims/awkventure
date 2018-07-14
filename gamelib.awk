@@ -21,7 +21,14 @@ function get_entity_index(id) {
 	return ENTITY_ID_TO_INDEX[id]
 }
 
+function add_message(message,   i) {
+	for(i=3; i>=0; i--) {
+		MESSAGE_LOG[i+1] = MESSAGE_LOG[i]
+	}
 
+	MESSAGE_LOG[0] = message
+
+}
 
 function add_tile(type, pos_x, pos_y) {
 
@@ -100,16 +107,17 @@ function handle_multiplayer_input(keys,   i, a, id, key, idx) {
 
 }
 
-function handle_input(idx, key,    str, entity_id) {
+function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y) {
 	if (length(key) != 0) {
 
 		x = ENTITIES[idx]["x"]
 		y = ENTITIES[idx]["y"]
+		hp = ENTITIES[idx]["hp"]
 		
-		if (key == KEY["UP"] || match(key, /\033\[A/)) { y-- }  
-		else if (key == KEY["DOWN"] || match(key, /\033\[B/)) { y++ } 
-		else if (key == KEY["LEFT"] || match(key, /\033\[D/)) { x-- } 
-		else if (key == KEY["RIGHT"] || match(key, /\033\[C/)) { x++} 
+		if (key == KEY["UP"] || match(key, /\033\[A/)) { dy-- }  
+		else if (key == KEY["DOWN"] || match(key, /\033\[B/)) { dy++ } 
+		else if (key == KEY["LEFT"] || match(key, /\033\[D/)) { dx-- } 
+		else if (key == KEY["RIGHT"] || match(key, /\033\[C/)) { dx++} 
 		else if (key == KEY["QUIT"] || match(key, /^\033$/)) {
 			RUNNING = 0
 		} else if (match(key, /8/)) {
@@ -126,19 +134,33 @@ function handle_input(idx, key,    str, entity_id) {
 			CURRENT_MENU = "character"
 		} else if (match(key, /i/)) {
 			CURRENT_MENU = "inventory"
+		} else if (match(key, /r/) && hp > 0) {
+			world_x = get_world_x(POINTER_X, x)
+			world_y = get_world_y(POINTER_Y, y)
+			entity_id = get_entity_at(world_x, world_y)
+			if (entity_id != "") {
+				attack_entity(entity_id, 0)
+			}
 		}
 		
-		if (is_blocked(x, y) == 0) {
+		if ((dx || dy) && !is_blocked(x+dx, y+dy) && hp > 0) {
 			# Move player
-			ENTITIES[idx]["x"] = x
-			ENTITIES[idx]["y"] = y
+			ENTITIES[idx]["x"] += dx
+			ENTITIES[idx]["y"] += dy
 			# Set Pointer position to player position
 			POINTER_X = middle_viewport_x
 			POINTER_Y = middle_viewport_y
-		} else if (is_blocked(x, y, "entity")) {
-			str = ENTITY_DATA["player"]["str"]
-			entity_id = get_entity_at(x, y)
-			attack_entity(entity_id, str)
+		} else if ((dx || dy) && is_blocked(x+dx, y+dy, "entity") && hp > 0) {
+			entity_id = get_entity_at(x+dx, y+dy)
+			if (entity_id != "") {
+				attack_entity(entity_id, 0)
+			}
+		}
+
+		if ((dx||dy) || match(key, /r/)) {
+			return 1
+		} else {
+			return 0
 		}
 	}
 }
@@ -154,7 +176,7 @@ function get_entity_at(x, y,    i) {
 			return i
 		}
 	}
-	return 0
+	return ""
 }
 
 
@@ -175,9 +197,30 @@ function move_entity(id, dx, dy,    x, y) {
 	}
 }
 
-function attack_entity(entity_id, str,    damage) {
+function attack_entity(entity_id, attacker_id,    type, damage, str) {
+	attacker_type = ENTITIES[attacker_id]["type"]
+	defender_type = ENTITIES[entity_id]["type"]
+	str = ENTITY_DATA[attacker_type]["str"]
 	damage = randint(0, str)
 	ENTITIES[entity_id]["hp"] -= damage
+
+	if (entity_id == 0) {
+		player_hp = ENTITIES[0]["hp"]
+		message = "The " attacker_type " attacks you (-" damage " HP)"
+		if (player_hp < 0) {
+			message = message ". You die!"
+		}
+		add_message(message)
+	} else if (attacker_id == 0) {
+		entity_hp = ENTITIES[entity_id]["hp"]
+		message = "You attack the " defender_type " (-" damage " HP)"
+		if (entity_hp < 0) {
+			message = message ". The " defender_type " died!"
+		}
+		add_message(message)
+		
+	}
+
 }
 
 function move_randomly(entity_id,   dx, dy) {
@@ -201,15 +244,13 @@ function entity_distance(id, x_dest, y_dest,    distance) {
 function move_towards_player(entity_id,    x, y, dx, dy, type, str) {
 	x = ENTITIES[entity_id]["x"]
 	y = ENTITIES[entity_id]["y"]
+	player_hp = ENTITIES[0]["hp"]
 
 	distance_to_player = entity_distance(entity_id, ENTITIES[0]["x"], ENTITIES[0]["y"])
 
-	if (distance_to_player == 1) {
-		type = ENTITIES[entity_id]["type"]
-		str = ENTITY_DATA["type"]["str"]
-		attack_entity(0, str)
-
-	} else if (distance_to_player <= 10) {
+	if (distance_to_player == 1 && player_hp > 0) {
+		attack_entity(0, entity_id)
+	} else if (distance_to_player <= 10 && player_hp > 0) {
 		# Move towards player
 		dx = 0
 		dy = 0

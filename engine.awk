@@ -25,6 +25,7 @@ BEGIN {
 
 	# Entities
 	ENTITIES["length"] = 0
+	MESSAGE_LOG[0] = ""
 }
 
 /^\[GAME\]/ {
@@ -171,14 +172,17 @@ END {
 }
 
 function singleplayer_loop() {
+	add_message("Welcome to awkventure!")
 	render(0)
 	RUNNING = 1
 	while(RUNNING) {
 
 		key = get_input(0)
-		handle_input(0, key)
+		take_turn = handle_input(0, key)
 		
-		update_entities()
+		if (take_turn) {
+			update_entities()
+		}
 		render(0)
 	}
 }

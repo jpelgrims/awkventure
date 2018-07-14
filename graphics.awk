@@ -35,7 +35,7 @@ function draw_line_dda(x1, y1, x2, y2,   dx, dy, x, y, v, x_incr, y_incr) {
 			y += y_incr
 			cur_x = round(x)
 			cur_y = round(y)
-			char = substr(SCREEN_BUFFER[cur_x][cur_y], length(SCREEN_BUFFER[cur_x][cur_y]), 1)
+			char = CHAR_BUFFER[cur_x][cur_y]
 			put_color(char, cur_x, cur_y, "light_sky_blue", "selection_gray")
 			# TODO do this properly
 			if (char == "#") {
@@ -205,6 +205,10 @@ function render_character_menu() {
 	for (x=0;x<11;x++) {
 		put_color(" ", screen_width-14+x, 12, "black", "forest_green")
 	}
+	max_hp = ENTITY_DATA["player"]["hp"]
+	current_hp = ENTITIES[0]["hp"]
+	put_color(current_hp "/" max_hp, screen_width-14+2, 12, "black", "forest_green")
+
 	put_color("MP", screen_width-17, 13, "menu_white", "menu_gray")
 	for (x=0;x<11;x++) {
 		put_color(" ", screen_width-14+x, 13, "black", "midnight_blue")
@@ -241,6 +245,7 @@ function render_tile(world_x, world_y, screen_x, screen_y) {
 	}
 }
 
+
 function render(entity_idx,    x, y) {
 	hide_cursor()
 	x = ENTITIES[entity_idx]["x"]
@@ -252,11 +257,22 @@ function render(entity_idx,    x, y) {
 	camera_view(x, y)
 	draw_line_dda(middle_viewport_x, middle_viewport_y, POINTER_X, POINTER_Y)
 	render_menu()
+	render_message_log()
 	#render_info_menu()
 	
+	merge_buffer_layers()
 	flip_buffer()
 	draw_cursor()
 }
+
+function render_message_log(   i, color) {
+	log_length = length(MESSAGE_LOG)
+	for (i=0;i<log_length;i++) {
+		color = sprintf("%s,%s,%s", 250-50*i, 250-50*i, 250-50*i)
+		put_rgb(MESSAGE_LOG[i], 2, i, color, "0,0,0")
+	}
+}
+
 function render_menu() {
 	render_kb_shortcuts()
 
@@ -284,18 +300,17 @@ function draw_art(type, name, x_pos, y_pos,   x, y, char) {
 	for (y=0;y<8;y++) {
 		for (x=0;x<8;x++) {
 			if (type == "entity" ) {
-				char = ENTITY_DATA[name]["art"][x][y]
+				color = ENTITY_DATA[name]["art"][x][y]
 			} else if (type=="tile") {
-				char = TILE_DATA[name]["art"][x][y]
+				color = TILE_DATA[name]["art"][x][y]
 			} else if (type=="item") {
-				char = ITEM_DATA[name]["art"][x][y]
+				color = ITEM_DATA[name]["art"][x][y]
 			} else {
-				char = " "
+				color = "30,30,30"
 			}
-			char = sprintf("\033[48;2;%s;%s;%sm", 30, 30, 30) char
 			# Draw char twice horizontally to make up for larger tile height
-			setch(char, x_pos+x*2, y_pos+y)
-			setch(char, x_pos+x*2+1, y_pos+y)
+			put_rgb(" ", x_pos+x*2, y_pos+y, "255,255,255", color)
+			put_rgb(" ", x_pos+x*2+1, y_pos+y, "255,255,255", color)
 		}
 	}
 	
@@ -323,17 +338,27 @@ function render_to_file(entity_idx,   x, y) {
 
 }
 
-function get_screen_x(world_x, focus_x) {
+function get_screen_x(world_x, focus_x,    screen_x) {
 	screen_x = x - (focus_x - middle_viewport_x)	
 	return screen_x
 }
 
-function get_screen_y(world_y, focus_y) {
+function get_screen_y(world_y, focus_y,    screen_y) {
 	screen_y = y - (focus_y - middle_viewport_y)
 	return screen_y
 }
 
-function camera_view(focus_x, focus_y) {
+function get_world_x(screen_x, focus_x,    world_x) {
+	world_x = screen_x + (focus_x - middle_viewport_x)
+	return world_x
+}
+
+function get_world_y(screen_y, focus_y,    world_y) {
+	world_y = screen_y + (focus_y - middle_viewport_y)
+	return world_y
+}
+
+function camera_view(focus_x, focus_y,   char) {
 	# Draw tiles
 	for(x=max(0, focus_x - viewport_width); x < min(focus_x+viewport_width, world_width); x++) {
 		for(y=max(0, focus_y - viewport_height); y < min(focus_y+viewport_height, world_height); y++) {
@@ -344,24 +369,31 @@ function camera_view(focus_x, focus_y) {
 		}
 	}
 
+	# Draw corpses
+	for (i=0; i<nr_of_entities();i++) {
+		x = ENTITIES[i]["x"]
+		y = ENTITIES[i]["y"]
+		if (ENTITIES[i]["hp"] <= 0 && is_visible(x, y)) {
+			screen_x = get_screen_x(x, focus_x)
+			screen_y = get_screen_y(y, focus_y)
+			put_color(";", screen_x, screen_y, "white")
+		}
+
+		
+	}
+
 	# Draw entities
 	for (i=0; i<nr_of_entities();i++) {
 		x = ENTITIES[i]["x"]
 		y = ENTITIES[i]["y"]
-        if (is_visible(x, y)) {
 
-			if (ENTITIES[i]["hp"] > 0) {
-				type = ENTITIES[i]["type"]
-				char = ENTITY_DATA[type]["char"]
-				front_color = ENTITY_DATA[type]["color"]
-			} else {
-				char = ";"
-				front_color = "white"
-			}
-
+		if (ENTITIES[i]["hp"] > 0 && is_visible(x, y)) {
+			type = ENTITIES[i]["type"]
+			char = ENTITY_DATA[type]["char"]
+			front_color = ENTITY_DATA[type]["color"]
 			screen_x = get_screen_x(x, focus_x)
 			screen_y = get_screen_y(y, focus_y)
-            put_color(char, screen_x, screen_y, front_color)
-        }
+			put_color(char, screen_x, screen_y, front_color)
+		}
 	}
 }

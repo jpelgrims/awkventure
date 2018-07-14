@@ -22,11 +22,14 @@ BEGIN {
     COLOR["menu_white"] = "200,200,200"
     COLOR["selection_gray"] = "50,50,50"
     COLOR["light_pink"] = "255,182,193"
+    COLOR["dark_green"] = "0,100,0"
 }
 
 function setch(char, x, y) {
     SCREEN_BUFFER[x][y] = char
 }
+
+
 
 function put_color(str, x, y, front, back,   back_rgb, front_rgb, i, a, char) {
     if (front) {
@@ -48,9 +51,35 @@ function put_color(str, x, y, front, back,   back_rgb, front_rgb, i, a, char) {
         if (i==1) {
             char = char
         }
-        SCREEN_BUFFER[x+i-1][y] = front_rgb back_rgb char
-        #CHAR_BUFFER[x+i-1][y] = char
-        #COLOR_BUFFER[x+i-1][y] = front_rgb back_rgb
+        CHAR_BUFFER[x+i-1][y] = char
+        FRONT_COLOR_BUFFER[x+i-1][y] = front_rgb
+        BACK_COLOR_BUFFER[x+i-1][y] = back_rgb
+    } 
+}
+
+function put_rgb(str, x, y, front, back,   back_rgb, front_rgb, i, a, char) {
+    if (front) {
+        split(front,a,",")
+    } else {
+        split(COLOR["white"],a,",")
+    }
+    front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
+    
+    if (back) {
+        split(back,a,",")
+    } else {
+        split(COLOR["black"],a,",")
+    }
+    back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
+    
+    for (i=1;i<= min(screen_width, length(str));i++) {
+        char = substr(str, i, 1)
+        if (i==1) {
+            char = char
+        }
+        CHAR_BUFFER[x+i-1][y] = char
+        FRONT_COLOR_BUFFER[x+i-1][y] = front_rgb
+        BACK_COLOR_BUFFER[x+i-1][y] = back_rgb
     } 
 }
 
@@ -69,9 +98,10 @@ function setch_color(char, x, y, front, back,   back_rgb, front_rgb, a) {
     }
     back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
     
-    SCREEN_BUFFER[x+i-1][y] = front_rgb back_rgb char
-    #CHAR_BUFFER[x+i-1][y] = char
-    #COLOR_BUFFER[x+i-1][y] = front_rgb back_rgb
+    CHAR_BUFFER[x+i-1][y] = char
+    FRONT_COLOR_BUFFER[x+i-1][y] = front_rgb
+    BACK_COLOR_BUFFER[x+i-1][y] = back_rgb
+
 }
 
 function get_input(echo,   arrow, key) {
@@ -151,11 +181,24 @@ function clear_buffer(   x, y) {
     }
 }
 
-function flip_buffer(   y, x) {
+function merge_buffer_layers(    x, y, front_color, back_color, char, cell) {
+    for(y=0;y<screen_height;y++){
+        for(x=0;x<screen_width;x++) {
+            front_color = FRONT_COLOR_BUFFER[x][y]
+            back_color = BACK_COLOR_BUFFER[x][y]
+            char = CHAR_BUFFER[x][y]
+            cell = front_color back_color char
+            SCREEN_BUFFER[x][y] = cell    
+        }
+    }
+}
+
+function flip_buffer(   y, x, cell) {
 	for (y=0; y<screen_height;y++) {
 		for (x=0;x<screen_width;x++) {
             if (SCREEN_BUFFER[x][y] != CURRENT_SCREEN[x][y]) {
-		        putch(SCREEN_BUFFER[x][y], x, y)
+                cell = SCREEN_BUFFER[x][y]
+		        putch(cell, x, y)
 				CURRENT_SCREEN[x][y] = SCREEN_BUFFER[x][y]
 			}
 		}
