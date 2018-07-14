@@ -2,7 +2,7 @@
 
 A roguelike written in *awk*, the text processing tool/language. Development roughly follows along with the 2018 RoguelikeDev tutorial series. 
 
-![Screenshot](screenshots/dev_02.png)
+[![asciicast](https://asciinema.org/a/JXVsZLEXBzlcRhOuH9YbEY2SQ.png)](https://asciinema.org/a/JXVsZLEXBzlcRhOuH9YbEY2SQ)
 
 # How to run
 
