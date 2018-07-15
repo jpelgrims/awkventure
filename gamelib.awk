@@ -206,14 +206,29 @@ function attack_entity(entity_id, attacker_id,    type, damage, str) {
 
 	if (entity_id == 0) {
 		player_hp = ENTITIES[0]["hp"]
-		message = "The " attacker_type " attacks you (-" damage " HP)"
-		if (player_hp < 0) {
-			message = message ". You die!"
+		message = "The " attacker_type " attacks you"
+
+		if (damage == 0) {
+			message = message ". The " attacker_type " misses! "
+		} else {
+			message = message " (-" damage " HP). "
 		}
+		
+		if (player_hp < 0) {
+			message = message "You die!"
+		}
+
 		add_message(message)
 	} else if (attacker_id == 0) {
 		entity_hp = ENTITIES[entity_id]["hp"]
-		message = "You attack the " defender_type " (-" damage " HP)"
+		message = "You attack the " defender_type 
+
+		if (damage == 0) {
+			message = message ". You miss!"
+		} else {
+			message = message " (-" damage " HP)"
+		}
+
 		if (entity_hp < 0) {
 			message = message ". The " defender_type " died!"
 		}

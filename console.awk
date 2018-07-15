@@ -1,3 +1,10 @@
+##### AWK CONSOLE DRAWING LIBRARY #####
+#
+# Works with 3 buffers (front colors, back colors & characters).
+# Merge all buffers with merge_buffer_layers() before using flip_buffer()
+# Write in buffer using console_write()
+
+
 BEGIN {
     COLOR["green"] = "0,255,0"
     COLOR["blue"] = "0,0,255"
@@ -25,54 +32,32 @@ BEGIN {
     COLOR["dark_green"] = "0,100,0"
 }
 
-function setch(char, x, y) {
-    SCREEN_BUFFER[x][y] = char
-}
+### Buffer functions ###
 
+function console_write(str, x, y, front, back,   back_rgb, front_rgb, i, a, char) {
 
-
-function put_color(str, x, y, front, back,   back_rgb, front_rgb, i, a, char) {
-    if (front) {
-        split(COLOR[front],a,",")
-    } else {
-        split(COLOR["white"],a,",")
-    }
-    front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
-    
-    if (back) {
-        split(COLOR[back],a,",")
-    } else {
-        split(COLOR["black"],a,",")
-    }
-    back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
-    
-    for (i=1;i<= min(screen_width, length(str));i++) {
-        char = substr(str, i, 1)
-        if (i==1) {
-            char = char
-        }
-        CHAR_BUFFER[x+i-1][y] = char
-        FRONT_COLOR_BUFFER[x+i-1][y] = front_rgb
-        BACK_COLOR_BUFFER[x+i-1][y] = back_rgb
-    } 
-}
-
-function put_rgb(str, x, y, front, back,   back_rgb, front_rgb, i, a, char) {
-    if (front) {
+    # Get front color RGB values
+    if (front && index(front, ",")) {
         split(front,a,",")
+    } else if (front) {
+        split(COLOR[front],a,",")
     } else {
         split(COLOR["white"],a,",")
     }
     front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
-    
-    if (back) {
+
+    # Get back color RGB values
+    if (back && index(back, ",")) {
         split(back,a,",")
+    } else if (back) {
+        split(COLOR[back],a,",")
     } else {
         split(COLOR["black"],a,",")
     }
     back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
     
-    for (i=1;i<= min(screen_width, length(str));i++) {
+    # Write string & colors to buffers
+    for (i=1; i <= min(screen_width, length(str));i++) {
         char = substr(str, i, 1)
         if (i==1) {
             char = char
@@ -83,26 +68,126 @@ function put_rgb(str, x, y, front, back,   back_rgb, front_rgb, i, a, char) {
     } 
 }
 
-function setch_color(char, x, y, front, back,   back_rgb, front_rgb, a) {
-    if (front) {
-        split(COLOR[front],a,",")
-    } else {
-        split(COLOR["white"],a,",")
-    }
-    front_rgb = sprintf("\033[38;2;%s;%s;%sm", a[1], a[2], a[3])
-    
-    if (back) {
-        split(COLOR[back],a,",")
-    } else {
-        split(COLOR["black"],a,",")
-    }
-    back_rgb = sprintf("\033[48;2;%s;%s;%sm", a[1], a[2], a[3])
-    
-    CHAR_BUFFER[x+i-1][y] = char
-    FRONT_COLOR_BUFFER[x+i-1][y] = front_rgb
-    BACK_COLOR_BUFFER[x+i-1][y] = back_rgb
 
+function set_character(char, x, y) {
+    CHAR_BUFFER[x][y] = char
 }
+
+
+function get_character(x, y) {
+    return CHAR_BUFFER[x][y]
+}
+
+
+function set_front_color(front, x, y) {
+    FRONT_COLOR_BUFFER[x][y] = front
+}
+
+
+function get_front_color(x, y) {
+    return FRONT_COLOR_BUFFER[x][y]
+}
+
+
+function set_back_color(back, x, y) {
+    BACK_COLOR_BUFFER[x][y] = back
+}
+
+
+function get_back_color(x, y) {
+    return BACK_COLOR_BUFFER[x][y]
+}
+
+
+function clear_buffer(   x, y) {
+    for (y=0; y<screen_height;y++) {
+		for (x=0;x<screen_width;x++) {
+            console_write(" ", x, y, "white", "black")
+        }
+    }
+}
+
+
+function merge_buffer_layers(    x, y, front_color, back_color, char, cell) {
+    for(y=0;y<screen_height;y++){
+        for(x=0;x<screen_width;x++) {
+            front_color = FRONT_COLOR_BUFFER[x][y]
+            back_color = BACK_COLOR_BUFFER[x][y]
+            char = CHAR_BUFFER[x][y]
+            cell = front_color back_color char
+            SCREEN_BUFFER[x][y] = cell    
+        }
+    }
+}
+
+
+function flip_buffer(   y, x, cell) {
+	for (y=0; y<screen_height;y++) {
+		for (x=0;x<screen_width;x++) {
+            if (SCREEN_BUFFER[x][y] != CURRENT_SCREEN[x][y]) {
+                cell = SCREEN_BUFFER[x][y]
+		        putch(cell, x, y)
+				CURRENT_SCREEN[x][y] = SCREEN_BUFFER[x][y]
+			}
+		}
+	}
+    reset_cursor()
+}
+
+
+### Direct console access functions ###
+
+function putch(char, x, y) {
+    printf "\033[%s;%sH%s", y+1, x, char
+}
+
+
+function cls() {
+	printf "\033[2J"
+}
+
+
+function move_cursor(x, y) {
+    printf "\033[%s;%sH", y+1, x
+}
+
+
+function revert_cursor(columns) {
+    printf "\033[%sD", columns
+}
+
+
+function set_foreground_color(r, g, b) {
+    printf "\033[38;2;%s;%s;%sm", r, g, b
+}
+
+
+function set_background_color(r, g, b) {
+    printf "\033[48;2;%s;%s;%sm", r, g, b
+}
+
+
+function show_cursor() {
+    printf "\033[?25h"
+}
+
+
+
+function hide_cursor() {
+    printf "\033[?25l"
+}
+
+
+function reset_cursor() {
+    printf "\033[H" 
+}
+
+
+function print_at_row(line, row) {
+    move_cursor(1, row)
+	print(line)
+}
+
 
 function get_input(echo,   arrow, key) {
     # Turn off console echo if requested
@@ -121,6 +206,7 @@ function get_input(echo,   arrow, key) {
     return key
 }
 
+
 function fade_in(char,   i, step) {
     step = 1
     for (i=0;i<=255;i+=step) {
@@ -130,79 +216,4 @@ function fade_in(char,   i, step) {
             revert_cursor(1)
         }
     }
-}
-
-function putch(char, x, y) {
-    printf "\033[%s;%sH%s", y+1, x, char
-}
-
-function cls() {
-	printf "\033[2J"
-}
-
-function move_cursor(x, y) {
-    printf "\033[%s;%sH", y+1, x
-}
-
-function revert_cursor(columns) {
-    printf "\033[%sD", columns
-}
-
-function set_foreground_color(r, g, b) {
-    printf "\033[38;2;%s;%s;%sm", r, g, b
-}
-
-function set_background_color(r, g, b) {
-    printf "\033[48;2;%s;%s;%sm", r, g, b
-}
-
-function show_cursor() {
-    printf "\033[?25h"
-}
-
-function hide_cursor() {
-    printf "\033[?25l"
-}
-
-function reset_cursor() {
-    printf "\033[H" 
-}
-
-function print_at_row(line, row) {
-    move_cursor(1, row)
-	print(line)
-}
-
-function clear_buffer(   x, y) {
-    for (y=0; y<screen_height;y++) {
-		for (x=0;x<screen_width;x++) {
-            put_color(" ", x, y, "white", "black")
-        }
-    }
-}
-
-function merge_buffer_layers(    x, y, front_color, back_color, char, cell) {
-    for(y=0;y<screen_height;y++){
-        for(x=0;x<screen_width;x++) {
-            front_color = FRONT_COLOR_BUFFER[x][y]
-            back_color = BACK_COLOR_BUFFER[x][y]
-            char = CHAR_BUFFER[x][y]
-            cell = front_color back_color char
-            SCREEN_BUFFER[x][y] = cell    
-        }
-    }
-}
-
-function flip_buffer(   y, x, cell) {
-	for (y=0; y<screen_height;y++) {
-		for (x=0;x<screen_width;x++) {
-            if (SCREEN_BUFFER[x][y] != CURRENT_SCREEN[x][y]) {
-                cell = SCREEN_BUFFER[x][y]
-		        putch(cell, x, y)
-				CURRENT_SCREEN[x][y] = SCREEN_BUFFER[x][y]
-			}
-		}
-	}
-
-    reset_cursor()
 }

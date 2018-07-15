@@ -11,7 +11,7 @@ BEGIN {
 	middle_viewport_y = int(viewport_height/2)
 }
 
-function draw_line_dda(x1, y1, x2, y2,   dx, dy, x, y, v, x_incr, y_incr) {
+function draw_line_dda(x1, y1, x2, y2,   dx, dy, x, y, v, x_incr, y_incr, char) {
 	dx = abs(x2-x1)
 	dy = abs(y2-y1)
 
@@ -35,17 +35,16 @@ function draw_line_dda(x1, y1, x2, y2,   dx, dy, x, y, v, x_incr, y_incr) {
 			y += y_incr
 			cur_x = round(x)
 			cur_y = round(y)
-			char = CHAR_BUFFER[cur_x][cur_y]
-			put_color(char, cur_x, cur_y, "light_sky_blue", "selection_gray")
+			char = get_character(cur_x,cur_y)
+			console_write(char, cur_x, cur_y, "light_sky_blue", "selection_gray")
 			# TODO do this properly
 			if (char == "#") {
 				break
 			}
 		}
 	}
-
-
 }
+
 
 function ray_cast(type, direction, origin_x, origin_y,   delta_x, delta_y, distance) {
 	distance = 0
@@ -135,13 +134,13 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 
 	# Draw menu
 
-	put_color("      LEGEND      ", screen_width-19, 1, "black", "light_steel_blue")
+	console_write("      LEGEND      ", screen_width-19, 1, "black", "light_steel_blue")
 
 	menu_height = length(uniq_entities) + length(uniq_tiles) + 3
 
 	for(x=0; x<18;x++) {
 		for(y=0; y<menu_height;y++) {
-			put_color(" ", screen_width-x-2, y+2, "black", "menu_gray")
+			console_write(" ", screen_width-x-2, y+2, "black", "menu_gray")
 		}
 	}
 
@@ -152,8 +151,8 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 		type = ENTITY_DATA[char]["type"]
 		color = ENTITY_DATA[type]["color"]
 		y = i + 2
-		put_color(char, x+2, y, color, "menu_gray")
-		put_color(type, x+4, y, "white", "menu_gray")
+		console_write(char, x+2, y, color, "menu_gray")
+		console_write(type, x+4, y, "white", "menu_gray")
 	}
 	
 	for (i=1; i<=length(uniq_tiles);i++) {
@@ -162,8 +161,8 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 		front_color = TILE_DATA[type]["front_color"]
 		back_color = TILE_DATA[type]["back_color"]
 		y = i + length(uniq_entities) + 3
-		put_color(char, x+2, y, front_color, back_color)
-		put_color(type, x+4, y, "white", "menu_gray")
+		console_write(char, x+2, y, front_color, back_color)
+		console_write(type, x+4, y, "white", "menu_gray")
 	}
 }
 
@@ -171,47 +170,47 @@ function render_info_menu(   x, pointer_char) {
 	pointer_char = SCREEN_BUFFER[POINTER_X][POINTER_Y]
 	pointer_char = substr(pointer_char, length(pointer_char), 1)
 	
-	put_color("     EXAMINE      ", screen_width-18, 1, "black", "white")
+	console_write("     EXAMINE      ", screen_width-18, 1, "black", "white")
 
 	if (is_item(pointer_char)) {
 		# TODO
 	} else if (is_tile(pointer_char)) {
 		name = TILE_DATA[pointer_char]["type"]
 		draw_art("tile", name, screen_width-18, 10)
-		put_color(TILE_DATA[name]["type"], screen_width-13, screen_height-10+8, "white", "black")
+		console_write(TILE_DATA[name]["type"], screen_width-13, screen_height-10+8, "white", "black")
 	} else if (is_entity(pointer_char)) {
 		name = ENTITY_DATA[pointer_char]["type"]
 		draw_art("entity", name, screen_width-18, 10)
-		put_color("HP", screen_width-18, screen_height-10+5, "white", "black")
+		console_write("HP", screen_width-18, screen_height-10+5, "white", "black")
 		for (x=0;x<12;x++) {
-			put_color(" ", screen_width-14+x, screen_height-10+5, "black", "forest_green")
+			console_write(" ", screen_width-14+x, screen_height-10+5, "black", "forest_green")
 		}
-		put_color(ENTITY_DATA[name]["cry"], screen_width-13, screen_height-10+8, "white", "black")
+		console_write(ENTITY_DATA[name]["cry"], screen_width-13, screen_height-10+8, "white", "black")
 	}
 }
 
 function render_character_menu() {
-	put_color("    CHARACTER     ", screen_width-19, 1, "black", "light_steel_blue")
+	console_write("    CHARACTER     ", screen_width-19, 1, "black", "light_steel_blue")
 
 	menu_height = 13
 	for(x=0; x<18;x++) {
 		for(y=0; y<menu_height;y++) {
-			put_color(" ", screen_width-x-2, y+2, "black", "menu_gray")
+			console_write(" ", screen_width-x-2, y+2, "black", "menu_gray")
 		}
 	}
 
 	draw_art("entity", "player", screen_width-18, 3)
-	put_color("HP", screen_width-17, 12, "menu_white", "menu_gray")
+	console_write("HP", screen_width-17, 12, "menu_white", "menu_gray")
 	for (x=0;x<11;x++) {
-		put_color(" ", screen_width-14+x, 12, "black", "forest_green")
+		console_write(" ", screen_width-14+x, 12, "black", "forest_green")
 	}
 	max_hp = ENTITY_DATA["player"]["hp"]
 	current_hp = ENTITIES[0]["hp"]
-	put_color(current_hp "/" max_hp, screen_width-14+2, 12, "black", "forest_green")
+	console_write(current_hp "/" max_hp, screen_width-14+2, 12, "black", "forest_green")
 
-	put_color("MP", screen_width-17, 13, "menu_white", "menu_gray")
+	console_write("MP", screen_width-17, 13, "menu_white", "menu_gray")
 	for (x=0;x<11;x++) {
-		put_color(" ", screen_width-14+x, 13, "black", "midnight_blue")
+		console_write(" ", screen_width-14+x, 13, "black", "midnight_blue")
 	}
 }
 
@@ -219,10 +218,10 @@ function render_kb_shortcuts(   y, text_color, background_color) {
 	y = screen_height-2
 	text_color = "midnight_blue"
 	background_color = "light_steel_blue"
-	put_color(" (L)egend ", 3, y, text_color, background_color)
-	put_color(" (C)haracter ", 15, y, text_color, background_color)
-	put_color(" (I)nventory ", 30, y, text_color, background_color)
-	put_color(" (Esc) Quit ", 45, y, text_color, background_color)
+	console_write(" (L)egend ", 3, y, text_color, background_color)
+	console_write(" (C)haracter ", 15, y, text_color, background_color)
+	console_write(" (I)nventory ", 30, y, text_color, background_color)
+	console_write(" (Esc) Quit ", 45, y, text_color, background_color)
 }
 
 function render_tile(world_x, world_y, screen_x, screen_y) {
@@ -241,7 +240,7 @@ function render_tile(world_x, world_y, screen_x, screen_y) {
 			back_color = TILE_DATA[char]["back_color"]
 		}
 		
-		put_color(char, screen_x, screen_y, front_color, back_color)
+		console_write(char, screen_x, screen_y, front_color, back_color)
 	}
 }
 
@@ -269,7 +268,7 @@ function render_message_log(   i, color) {
 	log_length = length(MESSAGE_LOG)
 	for (i=0;i<log_length;i++) {
 		color = sprintf("%s,%s,%s", 250-50*i, 250-50*i, 250-50*i)
-		put_rgb(MESSAGE_LOG[i], 2, i, color, "0,0,0")
+		console_write(MESSAGE_LOG[i], 2, i, color)
 	}
 }
 
@@ -309,8 +308,8 @@ function draw_art(type, name, x_pos, y_pos,   x, y, char) {
 				color = "30,30,30"
 			}
 			# Draw char twice horizontally to make up for larger tile height
-			put_rgb(" ", x_pos+x*2, y_pos+y, "255,255,255", color)
-			put_rgb(" ", x_pos+x*2+1, y_pos+y, "255,255,255", color)
+			console_write(" ", x_pos+x*2, y_pos+y, "255,255,255", color)
+			console_write(" ", x_pos+x*2+1, y_pos+y, "255,255,255", color)
 		}
 	}
 	
@@ -376,7 +375,7 @@ function camera_view(focus_x, focus_y,   char) {
 		if (ENTITIES[i]["hp"] <= 0 && is_visible(x, y)) {
 			screen_x = get_screen_x(x, focus_x)
 			screen_y = get_screen_y(y, focus_y)
-			put_color(";", screen_x, screen_y, "white")
+			console_write(";", screen_x, screen_y, "white")
 		}
 
 		
@@ -393,7 +392,7 @@ function camera_view(focus_x, focus_y,   char) {
 			front_color = ENTITY_DATA[type]["color"]
 			screen_x = get_screen_x(x, focus_x)
 			screen_y = get_screen_y(y, focus_y)
-			put_color(char, screen_x, screen_y, front_color)
+			console_write(char, screen_x, screen_y, front_color)
 		}
 	}
 }
