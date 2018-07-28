@@ -120,6 +120,17 @@ function add_to_inventory(item_type) {
 	}
 }
 
+function drop_item(   item_type, x, y) {
+	if (len(INVENTORY) > 0) {
+		item_type = INVENTORY[INVENTORY_SELECTION]
+		x = ENTITIES[0]["x"]
+		y = ENTITIES[0]["y"]
+		add_item(item_type, x, y)
+		remove(INVENTORY, INVENTORY_SELECTION)
+		add_message("You dropped the " item_type "!")
+	}
+}
+
 function use_item(   item_type, message, entity_type, entity_max_health, current_health) {
 	if (len(INVENTORY) > 0) {
 		item_type = INVENTORY[INVENTORY_SELECTION]
@@ -200,6 +211,8 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y) {
 			INVENTORY_SELECTION = max(0, INVENTORY_SELECTION-1)
 		} else if (match(key, /+/)) {
 			INVENTORY_SELECTION = min(INVENTORY_SELECTION+1, max(0, len(INVENTORY)-1))
+		} else if (match(key, /\//)) {
+			drop_item()
 		} else if (match(key, /u/)) {
 			use_item()
 		} else if (match(key, /r/) && hp > 0) {
