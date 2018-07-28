@@ -1,13 +1,27 @@
+# >>> AWKVENTURE GAME FUNCTIONALITY <<<
+
+# Contains all functions and globals associated with game functionality
+
+BEGIN {
+	# Globals initialization
+	init(ITEMS)
+	init(ENTITIES)
+	init(INVENTORY)
+
+	MESSAGE_LOG[0] = ""
+
+	world_width = 0
+	world_height = 0
+	level = 0
+}
+
 function add_entity(type, pos_x, pos_y, id, idx) {
 	idx = nr_of_entities()
 
 	ENTITIES[idx]["type"] = type
 	ENTITIES[idx]["x"] = pos_x
 	ENTITIES[idx]["y"] = pos_y
-	ENTITIES[idx]["hp"] = ENTITY_DATA[type]["hp"]
-
-	ENTITIES["length"]++
-	
+	ENTITIES[idx]["hp"] = ENTITY_DATA[type]["hp"]	
 
 	ENTITY_ID_TO_INDEX[id] = idx
 	return idx
@@ -34,8 +48,15 @@ function add_tile(type, pos_x, pos_y) {
 
 }
 
-function add_item(type, pos_x, pos_y) {
+function add_item(type, pos_x, pos_y, id, idx) {
+	idx = nr_of_items()
 
+	ITEMS[idx]["type"] = type
+	ITEMS[idx]["x"] = pos_x
+	ITEMS[idx]["y"] = pos_y
+
+	ITEM_ID_TO_INDEX[id] = idx
+	return idx
 }
 
 function is_visible(x, y) {
@@ -58,13 +79,20 @@ function is_item(char) {
 	return index(ITEM_DATA["CHARSET"], char)
 }
 
-function is_blocked(x, y, type,    char, entity_blocked, tile_blocked) {
+function is_blocked(x, y, type,    char, entity_blocked, tile_blocked, i) {
 	entity_blocked = 0
 	tile_blocked = 0
+	item_blocked = 0
 
 	for (i=0; i<nr_of_entities(); i++) {
 		if (ENTITIES[i]["x"] == x && ENTITIES[i]["y"] == y && ENTITIES[i]["hp"] > 0) {
 			entity_blocked = 1
+		}
+	}
+
+	for (i=0; i<nr_of_items(); i++) {
+		if (ITEMS[i]["x"] == x && ITEMS[i]["y"] == y && !ITEMS[i]["picked_up"]) {
+			item_blocked = 1
 		}
 	}
 
@@ -75,17 +103,46 @@ function is_blocked(x, y, type,    char, entity_blocked, tile_blocked) {
 		return tile_blocked
 	} else if (type == "entity") {
 		return entity_blocked
+	} else if (type == "item") {
+		return item_blocked
 	} else {
-		return tile_blocked || entity_blocked
+		return tile_blocked || entity_blocked || item_blocked
 	}
 }
 
 function activate_tile(activator_id, x, y) {
 
+} 
+
+function add_to_inventory(item_type) {
+	if (len(INVENTORY) <= 10) {
+		append(INVENTORY, item_type)
+	}
 }
 
-function use_item(user_id, item) {
+function use_item(   item_type, message, entity_type, entity_max_health, current_health) {
+	if (len(INVENTORY) > 0) {
+		item_type = INVENTORY[INVENTORY_SELECTION]
+		effect = ITEM_DATA[item_type]["effect"]
 
+		message = "You used the " item_type ". "
+
+		if (effect == "heal") {
+			entity_type = ENTITIES[user_id]["type"]
+			entity_max_health = ENTITY_DATA[entity_type]["hp"]
+			ENTITIES[user_id]["hp"] = entity_max_health
+			message = message "You health was restored!"
+		} else if (effect == "sicken") {
+			current_health = ENTITIES[user_id]["hp"]
+			ENTITIES[user_id]["hp"] = int(current_health / 2)
+			message = message "You feel sick!"
+		} else {
+			message = message "Nothing happens!"
+		}
+
+		add_message(message)
+		remove(INVENTORY, INVENTORY_SELECTION)
+	}
 }
 
 function handle_multiplayer_input(keys,   i, a, id, key, idx) {
@@ -119,7 +176,12 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y) {
 		else if (key == KEY["LEFT"] || match(key, /\033\[D/)) { dx-- } 
 		else if (key == KEY["RIGHT"] || match(key, /\033\[C/)) { dx++} 
 		else if (key == KEY["QUIT"] || match(key, /^\033$/)) {
-			RUNNING = 0
+			# Close any open menus, otherwiste close game
+			if (CURRENT_MENU != "") {
+				CURRENT_MENU = ""
+			} else {
+				RUNNING = 0
+			}
 		} else if (match(key, /8/)) {
 			POINTER_Y -= 1
 		} else if (match(key, /2/)) {
@@ -134,11 +196,17 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y) {
 			CURRENT_MENU = "character"
 		} else if (match(key, /i/)) {
 			CURRENT_MENU = "inventory"
+		} else if (match(key, /-/)) {
+			INVENTORY_SELECTION = max(0, INVENTORY_SELECTION-1)
+		} else if (match(key, /+/)) {
+			INVENTORY_SELECTION = min(INVENTORY_SELECTION+1, max(0, len(INVENTORY)-1))
+		} else if (match(key, /u/)) {
+			use_item()
 		} else if (match(key, /r/) && hp > 0) {
 			world_x = get_world_x(POINTER_X, x)
 			world_y = get_world_y(POINTER_Y, y)
 			entity_id = get_entity_at(world_x, world_y)
-			if (entity_id != "") {
+			if (entity_id != "" && entity_id != 0) {
 				attack_entity(entity_id, 0)
 			}
 		}
@@ -155,6 +223,16 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y) {
 			if (entity_id != "") {
 				attack_entity(entity_id, 0)
 			}
+		} else if ((dx || dy) && is_blocked(x+dx, y+dy, "item") && hp > 0) {
+			item_id = get_item_at(x+dx, y+dy)
+			item_type = ITEMS[item_id]["type"]
+			if (item_id != "") {
+				ITEMS[item_id]["picked_up"] = 1
+				add_to_inventory(item_type)
+				add_message("You picked up the " item_type "!")
+			}
+			ENTITIES[idx]["x"] += dx
+			ENTITIES[idx]["y"] += dy
 		}
 
 		if ((dx||dy) || match(key, /r/)) {
@@ -167,6 +245,19 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y) {
 
 function nr_of_entities() {
 	return length(ENTITIES)-1
+}
+
+function nr_of_items() {
+	return length(ITEMS)-1
+}
+
+function get_item_at(x, y,   i) {
+	for (i=0;i<nr_of_items(); i++) {
+		if (ITEMS[i]["x"] == x && ITEMS[i]["y"] == y) {
+			return i
+		}
+	}
+	return ""
 }
 
 function get_entity_at(x, y,    i) {
@@ -214,7 +305,7 @@ function attack_entity(entity_id, attacker_id,    type, damage, str) {
 			message = message " (-" damage " HP). "
 		}
 		
-		if (player_hp < 0) {
+		if (player_hp <= 0) {
 			message = message "You die!"
 		}
 
@@ -229,13 +320,26 @@ function attack_entity(entity_id, attacker_id,    type, damage, str) {
 			message = message " (-" damage " HP)"
 		}
 
-		if (entity_hp < 0) {
+		if (entity_hp <= 0) {
 			message = message ". The " defender_type " died!"
 		}
 		add_message(message)
+
+		if (entity_hp <= 0) {
+			drop_loot(ENTITIES[entity_id]["x"], ENTITIES[entity_id]["y"], defender_type)
+		}
 		
 	}
 
+}
+
+function drop_loot(x, y, from_entity,   item_index, item_type) {
+	if (chance(50)) {
+		item = randchar(ITEM_DATA["CHARSET"])
+		item_type = ITEM_DATA[item]["type"]
+		add_item(item_type, x, y)
+		add_message("The " from_entity " dropped a " item_type "!")
+	}
 }
 
 function move_randomly(entity_id,   dx, dy) {
@@ -304,6 +408,10 @@ function shutdown() {
 		system("stty echo")
 	}
 	exit 0
+}
+
+function spawn_items() {
+	# TODO
 }
 
 function spawn_monsters(   x, y, entity_char, toss, world_height, world_width, type) {

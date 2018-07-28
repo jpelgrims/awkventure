@@ -15,17 +15,6 @@ BEGIN {
 
 	world_maps[0] = 0
 	scripts[0] = 0
-
-	# Worldmap
-	WORLD_MAP[0] = 0
-	world_width = 0
-	world_height = 0
-	level = 0
-
-
-	# Entities
-	ENTITIES["length"] = 0
-	MESSAGE_LOG[0] = ""
 }
 
 /^\[GAME\]/ {

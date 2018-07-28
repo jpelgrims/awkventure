@@ -4,6 +4,8 @@ BEGIN {
 
 	CURRENT_MENU = "legend"
 
+	INVENTORY_SELECTION = 0
+
 	viewport_height = screen_height
 	viewport_width = screen_width
 
@@ -107,19 +109,39 @@ function update_memory_map() {
 	}
 }
 
-function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, back_color, color, i, x, y, menu_height) {
+function draw_menu_canvas(menu_title, menu_height,    x, y) {
+	console_write(menu_title, screen_width-19, 1, "black", "light_steel_blue")
+
+	for(x=0; x<18;x++) {
+		for(y=0; y<menu_height;y++) {
+			console_write(" ", screen_width-x-2, y+2, "black", "menu_gray")
+		}
+	}
+}
+
+function render_legend(   type, char, uniq_tiles, uniq_entities, uniq_items, front_color, back_color, color, i, x, y, menu_height) {
 	uniq_entities = ""
 	uniq_tiles = ""
 
-	# Enumerate different types of visible tiles & entities
+	# Enumerate different types of visible tiles, entities and items
 
 	for (i=0; i<nr_of_entities();i++) {
         x = ENTITIES[i]["x"]
         y = ENTITIES[i]["y"]
 		type = ENTITIES[i]["type"]
 		char = ENTITY_DATA[type]["char"]
-		if (!index(uniq_entities, char) && is_visible(x, y)) {
+		if (!index(uniq_entities, char) && is_visible(x, y) && ENTITIES[i]["hp"] > 0) {
 			uniq_entities = uniq_entities char
+		}
+	}
+
+	for (i=0; i<nr_of_items();i++) {
+        x = ITEMS[i]["x"]
+        y = ITEMS[i]["y"]
+		type = ITEMS[i]["type"]
+		char = ITEM_DATA[type]["char"]
+		if (!index(uniq_items, char) && is_visible(x, y) && !ITEMS[i]["picked_up"]) {
+			uniq_items = uniq_items char
 		}
 	}
 
@@ -134,15 +156,10 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 
 	# Draw menu
 
-	console_write("      LEGEND      ", screen_width-19, 1, "black", "light_steel_blue")
+	menu_height = length(uniq_entities) + length(uniq_tiles) + length(uniq_items) + 3
+	if (length(uniq_items) > 0) { menu_height += 1}
 
-	menu_height = length(uniq_entities) + length(uniq_tiles) + 3
-
-	for(x=0; x<18;x++) {
-		for(y=0; y<menu_height;y++) {
-			console_write(" ", screen_width-x-2, y+2, "black", "menu_gray")
-		}
-	}
+	draw_menu_canvas("      LEGEND      ", menu_height)
 
 	x = screen_width - 19
 
@@ -154,13 +171,25 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, front_color, ba
 		console_write(char, x+2, y, color, "menu_gray")
 		console_write(type, x+4, y, "white", "menu_gray")
 	}
+
+	for (i=1; i<=length(uniq_items);i++) {
+		char = substr(uniq_items,i,1)
+		type = ITEM_DATA[char]["type"]
+		color = ITEM_DATA[type]["color"]
+		y = i + length(uniq_entities) + 2
+		if (length(uniq_entities) > 0) { y += 1 }
+		console_write(char, x+2, y, color, "menu_gray")
+		console_write(type, x+4, y, "white", "menu_gray")
+	}
 	
 	for (i=1; i<=length(uniq_tiles);i++) {
 		char = substr(uniq_tiles,i,1)
 		type = TILE_DATA[char]["type"]
 		front_color = TILE_DATA[type]["front_color"]
 		back_color = TILE_DATA[type]["back_color"]
-		y = i + length(uniq_entities) + 3
+		y = i + length(uniq_entities) +  length(uniq_items) + 2
+		if (length(uniq_entities) > 0) { y += 1 }
+		if (length(uniq_items) > 0) { y += 1 }
 		console_write(char, x+2, y, front_color, back_color)
 		console_write(type, x+4, y, "white", "menu_gray")
 	}
@@ -186,6 +215,24 @@ function render_info_menu(   x, pointer_char) {
 			console_write(" ", screen_width-14+x, screen_height-10+5, "black", "forest_green")
 		}
 		console_write(ENTITY_DATA[name]["cry"], screen_width-13, screen_height-10+8, "white", "black")
+	}
+}
+
+function render_inventory_menu(   menu_height, x, idx, i, item_type, char) {
+	menu_height = len(INVENTORY) + 2
+	draw_menu_canvas("     INVENTORY    ", menu_height)
+	x = screen_width - 19
+
+	for (i=0; i<len(INVENTORY);i++) {
+		item_type = INVENTORY[i]
+		char = ITEM_DATA[item_type]["char"]
+		color = ITEM_DATA[item_type]["color"]
+		console_write(char, x+4, 3+i, color, "menu_gray")
+		console_write(item_type, x+6, 3+i, "white", "menu_gray")
+
+		if (i == INVENTORY_SELECTION) {
+			console_write(">", x+2, 3+INVENTORY_SELECTION, "light_steel_blue", "menu_gray")
+		}
 	}
 }
 
@@ -275,12 +322,13 @@ function render_message_log(   i, color) {
 function render_menu() {
 	render_kb_shortcuts()
 
-	if (CURRENT_MENU == "legend") {
-		render_legend()
-	} else if (CURRENT_MENU == "character") {
-		render_character_menu()
-	} else if (CURRENT_MENU == "inventory") {
-		# TODO
+	switch(CURRENT_MENU) {
+		case "legend":
+			render_legend(); break
+		case "character":
+			render_character_menu(); break
+		case "inventory":
+			render_inventory_menu(); break
 	}
 }
 
@@ -377,8 +425,21 @@ function camera_view(focus_x, focus_y,   char) {
 			screen_y = get_screen_y(y, focus_y)
 			console_write(";", screen_x, screen_y, "white")
 		}
+	}
 
-		
+	# Draw items
+	for (i=0; i<nr_of_items();i++) {
+		x = ITEMS[i]["x"]
+		y = ITEMS[i]["y"]
+
+		if (is_visible(x, y) && !ITEMS[i]["picked_up"]) {
+			type = ITEMS[i]["type"]
+			char = ITEM_DATA[type]["char"]
+			color = ITEM_DATA[type]["color"]
+			screen_x = get_screen_x(x, focus_x)
+			screen_y = get_screen_y(y, focus_y)
+			console_write(char, screen_x, screen_y, color)
+		}
 	}
 
 	# Draw entities
@@ -395,4 +456,5 @@ function camera_view(focus_x, focus_y,   char) {
 			console_write(char, screen_x, screen_y, front_color)
 		}
 	}
+
 }

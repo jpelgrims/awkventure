@@ -1,11 +1,12 @@
-##### AWK CONSOLE DRAWING LIBRARY #####
-#
+# >>> AWK CONSOLE DRAWING LIBRARY <<<
+
 # Works with 3 buffers (front colors, back colors & characters).
-# Merge all buffers with merge_buffer_layers() before using flip_buffer()
+# Merge all buffers with merge_buffer_layers() before using flip_buffer() to show the buffer on the console
 # Write in buffer using console_write()
 
 
 BEGIN {
+    # CSS colors and associated RGB values
     COLOR["green"] = "0,255,0"
     COLOR["blue"] = "0,0,255"
     COLOR["red"] = "255,0,0"
@@ -206,6 +207,7 @@ function get_input(echo,   arrow, key) {
     return key
 }
 
+### Other functions ###
 
 function fade_in(char,   i, step) {
     step = 1
