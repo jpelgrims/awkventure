@@ -85,21 +85,21 @@ BLOCK greeting {
 END_SCRIPT
 
 [ENTITIES]
-type, char, color, nature, cry, rarity, hp, str, def
-player, @, white, none, "...", none, 100, 10, 10
-slime, s, green, docile, "blub..blub...", uncommon, 40, 1, 10
-zombie, z, green, aggressive, "Brainss...", uncommon, 25, 4, 2
-skeleton, y, white, aggressive, "...rattle", uncommon, 20, 3, 1
-ghost, g, white, aggressive, "ooOooOo...", uncommon, 30, 5, 1
-bogeyman, b, blue, aggressive, "OOGABOOGAWOOGA!", veryrare, 50, 10, 10
-mouse, m, grey, skittish, "squeek!", common, 5, 1, 1
-rat, R, grey, aggressive, "SQUEEK!", uncommon, 15, 3, 2
-scavenger, S, green, neutral, "Need something?", rare, 35, 5, 4
-spider, *, white, aggressive, none, common, 10, 2, 1
-goblin, g, green, aggressive, "urrgh", uncommon, 30, 5, 6
-troll, T, green, aggressive, "URRRGH!", rare, 120, 15, 10
-dragon, D, red, aggressive, "ROAARRR!!!", legendary, 300, 30, 40
-snake, ~, green, aggressive, "hsssss!", common, 15, 10, 5
+type, char, color, nature, cry, rarity, hp, str, def, xp
+player, @, white, none, "...", none, 100, 10, 10, 100
+slime, s, green, docile, "blub..blub...", uncommon, 40, 1, 10, 20
+zombie, z, green, aggressive, "Brainss...", uncommon, 25, 4, 2, 30
+skeleton, y, white, aggressive, "...rattle", uncommon, 20, 3, 1, 35
+ghost, n, white, aggressive, "ooOooOo...", uncommon, 30, 5, 1, 55
+bogeyman, b, blue, aggressive, "OOGABOOGAWOOGA!", veryrare, 50, 10, 10, 60
+mouse, m, grey, skittish, "squeek!", common, 5, 1, 1, 5
+rat, R, grey, aggressive, "SQUEEK!", uncommon, 15, 3, 2, 15
+scavenger, S, green, neutral, "Need something?", rare, 35, 5, 4, 55
+spider, *, white, aggressive, none, common, 10, 2, 1, 5
+goblin, g, green, aggressive, "urrgh", uncommon, 30, 5, 6, 25
+troll, T, green, aggressive, "URRRGH!", rare, 120, 15, 10, 80
+dragon, D, red, aggressive, "ROAARRR!!!", legendary, 300, 30, 40, 250
+snake, ~, green, aggressive, "hsssss!", common, 15, 10, 5, 30
 
 [ENTITY snake: ART]
 RGB(127,0,0): 2,0 3,0
@@ -136,12 +136,12 @@ RGB(56,56,56): 3,4 4,4
 
 [TILES]
 type, char, front_color, back_color, blocked, action
-ground, ., grey, black, false, NONE
-wall, #, white, black, true, NONE
-staircase_up, >, white, brown, false, NEXT_LEVEL
-staircase_down, <, white, brown, false, PREVIOUS_LEVEL
-cave, O, white, grey, false, GENERATE_CAVE_LEVEL
-chest, =, brown, true, LOOT
+ground, ., grey, black, false, none
+wall, #, white, black, true, none
+stairs_down, >, black, grey, false, next_level
+stairs_up, <, black, grey, false, previous_level
+cave, O, white, grey, false, generate_cave_level
+chest, =, brown, true, loot
 
 [TILE ground: ART]
 RGB(85,198,43): 0,0 0,1 0,2 0,3 0,5 0,6 0,7 1,0 1,3 1,4 1,5 1,7 2,0 2,1 2,2 2,3 2,4 2,5 2,6 2,7 3,1 3,2 3,3 3,6 3,7 4,0 4,1 4,3 4,4 4,5 4,6 4,7 5,0 5,1 5,2 5,3 5,4 5,6 5,7 6,0 6,3 6,4 6,5 6,6 7,0 7,1 7,2 7,3 7,5 7,6 7,7
@@ -151,16 +151,16 @@ RGB(98,229,50): 0,4 1,1 1,2 1,6 3,0 3,4 3,5 4,2 5,5 6,1 6,2 6,7 7,4
 RGB(96,38,0): 0,0 0,1 0,2 0,3 0,4 0,5 0,6 0,7 1,0 1,2 1,4 1,7 2,0 2,6 2,7 3,0 3,1 3,7 4,0 4,7 5,0 5,1 5,6 5,7 6,0 6,2 6,5 6,7 7,0 7,1 7,2 7,3 7,4 7,5 7,6 7,7
 RGB(127,51,0): 1,1 1,3 1,5 1,6 2,1 2,2 2,3 2,4 2,5 3,2 3,3 3,4 3,5 3,6 4,1 4,2 4,3 4,4 4,5 4,6 5,2 5,3 5,4 5,5 6,1 6,3 6,4 6,6
 
-
 [ITEMS]
-type, char, color, effect, dmg_multiplier, def_multiplier
-potion, p, green, heal, 1, 1
-poison, p, red, sicken, 1, 1
-key, k, yellow, unlock, 1, 1
-bow, b, brown, equip, 2, 1
-sword, s, grey, equip, 3, 1
-club, c, brown, equip, 2, 1
-boots, b, grey, equip, 1, 2
-helmet, h, grey, equip, 1, 2
-chainmail, m, grey, equip, 1, 3
-platelegs, l, grey, equip, 1, 3
+type, char, category, color, effect, dmg_multiplier, def_multiplier
+potion, p, consumable, green, heal, 1, 1
+poison, £, consumable, red, sicken, 1, 1
+key, k, tool, yellow, unlock, 1, 1
+bow, w, ranged_weapon, brown, equip, 2, 1
+sword, s, melee_weapon, grey, equip, 3, 1
+club, c, melee_weapon, brown, equip, 2, 1
+boots, b, feet_wear, grey, equip, 1, 2
+gloves, g, hand_wear, grey, equip, 1, 2
+helmet, h, head_wear, grey, equip, 1, 2
+chainmail, m, torso_wear, grey, equip, 1, 3
+platelegs, l, leg_wear, grey, equip, 1, 3

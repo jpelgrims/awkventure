@@ -63,7 +63,7 @@ function create_room(terrain, x_pos, y_pos, width, height,   x, y) {
     }
 }
 
-function generate_dungeon(terrain, width, height, max_rooms, room_min_size, room_max_size,    i, x, w, h, rooms) {
+function generate_dungeon(terrain, width, height, max_rooms, room_min_size, room_max_size,    i, x, y, w, h, rooms, num_rooms, center_x, center_y, collision, x2, y2, w2, h2, prev_x, prev_y) {
     create_world(terrain, width, height, "wall")
 
     num_rooms = 0
@@ -123,4 +123,10 @@ function generate_dungeon(terrain, width, height, max_rooms, room_min_size, room
             num_rooms += 1
         }
     }
+
+    # Place stairs
+    if (GAME_LEVEL > 0) {
+        terrain[ENTITIES[0]["x"]][ENTITIES[0]["y"]] = TILE_DATA["stairs_up"]["char"]
+    }
+    terrain[center_x][center_y] = TILE_DATA["stairs_down"]["char"]
 }

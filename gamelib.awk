@@ -6,13 +6,22 @@ BEGIN {
 	# Globals initialization
 	init(ITEMS)
 	init(ENTITIES)
-	init(INVENTORY)
+	split("", INVENTORY)
 
 	MESSAGE_LOG[0] = ""
 
 	world_width = 0
 	world_height = 0
-	level = 0
+	GAME_LEVEL = 0
+
+	CURRENT_LEVEL = 1
+	CURRENT_EXPERIENCE = 0
+	LEVEL_UP_BASE = 200
+    LEVEL_UP_FACTOR = 150
+}
+
+function get_experience_to_next_level() {
+	return LEVEL_UP_BASE + CURRENT_LEVEL * LEVEL_UP_FACTOR
 }
 
 function add_entity(type, pos_x, pos_y, id, idx) {
@@ -49,7 +58,7 @@ function add_tile(type, pos_x, pos_y) {
 }
 
 function add_item(type, pos_x, pos_y, id, idx) {
-	idx = nr_of_items()
+	idx = nr_of_items() + 1
 
 	ITEMS[idx]["type"] = type
 	ITEMS[idx]["x"] = pos_x
@@ -110,50 +119,88 @@ function is_blocked(x, y, type,    char, entity_blocked, tile_blocked, i) {
 	}
 }
 
-function activate_tile(activator_id, x, y) {
+function activate_tile(activator_id, x, y,    tile_id, tile_type, action) {
+	tile_id = WORLD_MAP[x][y]
+	tile_type = TILE_DATA[tile_id]["type"]
+	action = TILE_DATA[tile_id]["action"]
 
+	if (activator_id == 0 && action == "next_level") {
+		GAME_LEVEL += 1
+		generate_level(world_width, world_height)
+		add_message("You go down the stairs...")
+	} else if (activator_id == 0 && action == "previous_level") {
+		GAME_LEVEL -= 1
+		generate_level(world_width, world_height)
+		add_message("You go back up the stairs. The rooms seem different...")
+	}
 } 
 
-function add_to_inventory(item_type) {
-	if (len(INVENTORY) <= 10) {
-		append(INVENTORY, item_type)
+function add_to_inventory(item_id) {
+	if (length(INVENTORY) <= 10) {
+		append(INVENTORY, item_id)
 	}
 }
 
-function drop_item(   item_type, x, y) {
-	if (len(INVENTORY) > 0) {
-		item_type = INVENTORY[INVENTORY_SELECTION]
+function drop_item(   item_id, x, y, type) {
+	if (length(INVENTORY) > 0) {
+		item_id = INVENTORY[INVENTORY_SELECTION+1]
 		x = ENTITIES[0]["x"]
 		y = ENTITIES[0]["y"]
-		add_item(item_type, x, y)
-		remove(INVENTORY, INVENTORY_SELECTION)
-		add_message("You dropped the " item_type "!")
+
+		# Move item to where the player is standing
+		ITEMS[item_id]["x"] = x
+		ITEMS[item_id]["y"] = y
+		ITEMS[item_id]["picked_up"] = 0
+
+		remove(INVENTORY, INVENTORY_SELECTION+1)
+		
+		type = ITEMS[item_id]["type"]
+		add_message("You dropped the " type "!")
 	}
 }
 
-function use_item(   item_type, message, entity_type, entity_max_health, current_health) {
-	if (len(INVENTORY) > 0) {
-		item_type = INVENTORY[INVENTORY_SELECTION]
+function use_item(   item_type, message, entity_type, entity_max_health, current_health, item_id, category) {
+	if (length(INVENTORY) > 0) {
+		item_id = INVENTORY[INVENTORY_SELECTION+1]
+		item_type = ITEMS[item_id]["type"]
 		effect = ITEM_DATA[item_type]["effect"]
+		category = ITEM_DATA[item_type]["category"]
 
 		message = "You used the " item_type ". "
 
 		if (effect == "heal") {
-			entity_type = ENTITIES[user_id]["type"]
+			entity_type = ENTITIES[0]["type"]
 			entity_max_health = ENTITY_DATA[entity_type]["hp"]
-			ENTITIES[user_id]["hp"] = entity_max_health
+			ENTITIES[0]["hp"] = entity_max_health
 			message = message "You health was restored!"
 		} else if (effect == "sicken") {
-			current_health = ENTITIES[user_id]["hp"]
-			ENTITIES[user_id]["hp"] = int(current_health / 2)
+			current_health = ENTITIES[0]["hp"]
+			ENTITIES[0]["hp"] = int(current_health / 2)
 			message = message "You feel sick!"
+		} else if (effect == "equip") {
+			if (!is_equipped(item_id)) {
+				EQUIPMENT[category] = item_id
+				message = "You equip the " item_type "!"
+			} else {
+				delete EQUIPMENT[category]
+				message = "You remove the " item_type "!"
+			}
 		} else {
 			message = message "Nothing happens!"
 		}
 
 		add_message(message)
-		remove(INVENTORY, INVENTORY_SELECTION)
+		if (category == "consumable") {
+			remove(INVENTORY, INVENTORY_SELECTION+1)
+			INVENTORY_SELECTION = min(INVENTORY_SELECTION=1, length(INVENTORY))
+		}
 	}
+}
+
+function is_equipped(item_id,    effect, category) {
+	type = ITEMS[item_id]["type"]
+	category = ITEM_DATA[type]["category"]
+	return EQUIPMENT[category] == item_id
 }
 
 function handle_multiplayer_input(keys,   i, a, id, key, idx) {
@@ -171,11 +218,25 @@ function handle_multiplayer_input(keys,   i, a, id, key, idx) {
 		idx = get_entity_index(id)
 		handle_input(id, key)
 	}
-
-
 }
 
-function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y) {
+
+function move_entity(id, dx, dy,    x, y) {
+	x = ENTITIES[id]["x"] + dx 
+	y = ENTITIES[id]["y"] + dy
+	if (!is_blocked(x, y)) {
+		ENTITIES[id]["x"] = x
+		ENTITIES[id]["y"] = y
+		activate_tile(id, x, y)
+	}
+}
+
+function set_pointer(x, y) {
+	POINTER_X = middle_viewport_x
+	POINTER_Y = middle_viewport_y
+}
+
+function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y, x, y) {
 	if (length(key) != 0) {
 
 		x = ENTITIES[idx]["x"]
@@ -210,12 +271,14 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y) {
 		} else if (match(key, /-/)) {
 			INVENTORY_SELECTION = max(0, INVENTORY_SELECTION-1)
 		} else if (match(key, /+/)) {
-			INVENTORY_SELECTION = min(INVENTORY_SELECTION+1, max(0, len(INVENTORY)-1))
+			INVENTORY_SELECTION = min(INVENTORY_SELECTION+1, max(0, length(INVENTORY)-1))
 		} else if (match(key, /\//)) {
 			drop_item()
 		} else if (match(key, /u/)) {
 			use_item()
-		} else if (match(key, /r/) && hp > 0) {
+		} else if (match(key, /o/)) {
+			save_game()
+		} else if (match(key, /r/) && hp > 0 && EQUIPMENT["ranged_weapon"]) {
 			world_x = get_world_x(POINTER_X, x)
 			world_y = get_world_y(POINTER_Y, y)
 			entity_id = get_entity_at(world_x, world_y)
@@ -225,12 +288,9 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y) {
 		}
 		
 		if ((dx || dy) && !is_blocked(x+dx, y+dy) && hp > 0) {
-			# Move player
-			ENTITIES[idx]["x"] += dx
-			ENTITIES[idx]["y"] += dy
-			# Set Pointer position to player position
-			POINTER_X = middle_viewport_x
-			POINTER_Y = middle_viewport_y
+			# Move player and set cursor position
+			move_entity(idx, dx, dy)
+			set_pointer(middle_viewport_x, middle_viewport_y)
 		} else if ((dx || dy) && is_blocked(x+dx, y+dy, "entity") && hp > 0) {
 			entity_id = get_entity_at(x+dx, y+dy)
 			if (entity_id != "") {
@@ -239,13 +299,12 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y) {
 		} else if ((dx || dy) && is_blocked(x+dx, y+dy, "item") && hp > 0) {
 			item_id = get_item_at(x+dx, y+dy)
 			item_type = ITEMS[item_id]["type"]
-			if (item_id != "") {
+			if (item_id != 0) {
 				ITEMS[item_id]["picked_up"] = 1
-				add_to_inventory(item_type)
+				add_to_inventory(item_id)
 				add_message("You picked up the " item_type "!")
 			}
-			ENTITIES[idx]["x"] += dx
-			ENTITIES[idx]["y"] += dy
+			move_entity(idx, dx, dy)
 		}
 
 		if ((dx||dy) || match(key, /r/)) {
@@ -292,24 +351,16 @@ function update_entities(   i, x, y) {
 	}
 }
 
-function move_entity(id, dx, dy,    x, y) {
-	x = ENTITIES[id]["x"] + dx 
-	y = ENTITIES[id]["y"] + dy
-	if (!is_blocked(x, y)) {
-		ENTITIES[id]["x"] += dx
-		ENTITIES[id]["y"] += dy
-	}
-}
-
-function attack_entity(entity_id, attacker_id,    type, damage, str) {
+function attack_entity(entity_id, attacker_id,    type, damage, str, amount, entity_hp, entity_hp_after) {
 	attacker_type = ENTITIES[attacker_id]["type"]
 	defender_type = ENTITIES[entity_id]["type"]
 	str = ENTITY_DATA[attacker_type]["str"]
 	damage = randint(0, str)
+	entity_hp = ENTITIES[entity_id]["hp"]
 	ENTITIES[entity_id]["hp"] -= damage
+	entity_hp_after = ENTITIES[entity_id]["hp"]
 
 	if (entity_id == 0) {
-		player_hp = ENTITIES[0]["hp"]
 		message = "The " attacker_type " attacks you"
 
 		if (damage == 0) {
@@ -318,13 +369,12 @@ function attack_entity(entity_id, attacker_id,    type, damage, str) {
 			message = message " (-" damage " HP). "
 		}
 		
-		if (player_hp <= 0) {
+		if (entity_hp_after <= 0) {
 			message = message "You die!"
 		}
 
-		add_message(message)
+		add_message(message)""
 	} else if (attacker_id == 0) {
-		entity_hp = ENTITIES[entity_id]["hp"]
 		message = "You attack the " defender_type 
 
 		if (damage == 0) {
@@ -333,17 +383,31 @@ function attack_entity(entity_id, attacker_id,    type, damage, str) {
 			message = message " (-" damage " HP)"
 		}
 
-		if (entity_hp <= 0) {
+		if (entity_hp_after <= 0) {
 			message = message ". The " defender_type " died!"
+			add_message(message)
+			amount = ENTITY_DATA[defender_type]["xp"]
+			gain_experience(amount)
+		} else {
+			add_message(message)
 		}
-		add_message(message)
+		
 
-		if (entity_hp <= 0) {
+		if (entity_hp_after <= 0) {
 			drop_loot(ENTITIES[entity_id]["x"], ENTITIES[entity_id]["y"], defender_type)
 		}
 		
 	}
+}
 
+function gain_experience(experience,   message) {
+	CURRENT_EXPERIENCE += experience
+	message = "You gained " experience " xp."
+	if (CURRENT_EXPERIENCE > get_experience_to_next_level()) {
+		CURRENT_LEVEL += 1
+		message = message " You gained a level!"
+	}
+	add_message(message)
 }
 
 function drop_loot(x, y, from_entity,   item_index, item_type) {
@@ -440,6 +504,33 @@ function spawn_monsters(   x, y, entity_char, toss, world_height, world_width, t
 			}
 		}
 	}
+}
+
+
+function generate_level(world_width, world_height,    temp_array) {
+	# These need to be emptied to avoid artifacts from previous levels
+	delete VISIBLE_MAP
+	delete MEMORY_MAP
+
+	# Remove all entities except the player
+	for(i=1;i<length(ENTITIES);i++) {
+		delete ENTITIES[i]
+	}
+
+	# Remove all items that are not in the inventory
+	for(i=1;i<length(ITEMS);i++) {
+		if (!ITEMS[i]["picked_up"]) {
+			delete ITEMS[i]
+		}
+	}
+
+	# Initialization
+	#add_entity("player", player_x, player_y)
+
+	#generate_random_walk_cave(WORLD_MAP, world_width, world_height, 3, 3, 1000)
+	generate_dungeon(WORLD_MAP, world_width, world_height, 30, 6, 10)
+	generate_border(WORLD_MAP, world_width, world_height)
+	spawn_monsters()
 }
 
 function set_level(level_nr) {

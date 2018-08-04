@@ -12,7 +12,7 @@ run_game()
 {
     GAMEFILES=$(ls | grep -o '^[a-zA-Z]*.dat$')
     LIBRARIES=$(ls | grep -o '^[a-zA-Z]*.awk$')
-    SAVEFILE=$(ls | grep -o '^[a-zA-Z]*.awk$' | head -n 1)
+    SAVEFILE=$(ls | grep -o '^[a-zA-Z]*.sav$' | head -n 1)
 
     gawk $(for lib in $LIBRARIES; do echo "-f "; echo $lib; done;) \
         -v screen_width=$WIDTH \

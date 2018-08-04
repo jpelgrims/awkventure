@@ -218,28 +218,37 @@ function render_info_menu(   x, pointer_char) {
 	}
 }
 
-function render_inventory_menu(   menu_height, x, idx, i, item_type, char) {
-	menu_height = len(INVENTORY) + 2
+function render_inventory_menu(   menu_height, x, idx, i, item_type, char, color) {
+	menu_height = length(INVENTORY) + 2
 	draw_menu_canvas("     INVENTORY    ", menu_height)
 	x = screen_width - 19
 
-	for (i=0; i<len(INVENTORY);i++) {
-		item_type = INVENTORY[i]
+	for (i=1; i<=length(INVENTORY);i++) {
+		item_id = INVENTORY[i]
+		item_type = ITEMS[item_id]["type"]
 		char = ITEM_DATA[item_type]["char"]
 		color = ITEM_DATA[item_type]["color"]
-		console_write(char, x+4, 3+i, color, "menu_gray")
-		console_write(item_type, x+6, 3+i, "white", "menu_gray")
+		console_write(char, x+4, 3+i-1, color, "menu_gray")
 
-		if (i == INVENTORY_SELECTION) {
+		if (is_equipped(item_id)) {
+			color = "yellow"
+		} else {
+			color = "white"
+		}
+
+		console_write(item_type, x+6, 3+i-1, color, "menu_gray")
+
+		if (i == INVENTORY_SELECTION+1) {
 			console_write(">", x+2, 3+INVENTORY_SELECTION, "light_steel_blue", "menu_gray")
 		}
+
 	}
 }
 
 function render_character_menu() {
 	console_write("    CHARACTER     ", screen_width-19, 1, "black", "light_steel_blue")
 
-	menu_height = 13
+	menu_height = 15
 	for(x=0; x<18;x++) {
 		for(y=0; y<menu_height;y++) {
 			console_write(" ", screen_width-x-2, y+2, "black", "menu_gray")
@@ -259,6 +268,13 @@ function render_character_menu() {
 	for (x=0;x<11;x++) {
 		console_write(" ", screen_width-14+x, 13, "black", "midnight_blue")
 	}
+
+	console_write("XP", screen_width-17, 14, "menu_white", "menu_gray")
+	for (x=0;x<11;x++) {
+		console_write(" ", screen_width-14+x, 14, "black", "red")
+	}
+	max_xp = get_experience_to_next_level()
+	console_write(CURRENT_EXPERIENCE "/" max_xp, screen_width-14+2, 14, "black", "red")
 }
 
 function render_kb_shortcuts(   y, text_color, background_color) {

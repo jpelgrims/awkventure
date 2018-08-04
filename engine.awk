@@ -97,41 +97,7 @@ END {
 	cls()
 
 	if (INTRO_FLAG) {
-		# Show game title
-		subtext_nr = randint(0, array_length(subtexts))
-		
-		draw_banner()
-		
-		sleep(2)
-		cls()
-
-		# Show game story
-		for (i in story) {
-			move_cursor(4, (screen_height-8)/2+i)
-			split(story[i], words," ")
-			for (w in words) {
-
-				for (o=1;o<=length(words[w]);o++) {
-					char = substr(words[w], o, 1)
-					if (char != ".") {
-						fade_in(char)
-						sleep(0.03)
-					} else {
-						printf char
-						sleep(1.5)
-					}
-					
-				}
-				sleep(0.05)
-				printf " "
-			}
-			
-		}
-		show_cursor()
-		printf "\n\n   Press any key to start"
-		get_input()
-		hide_cursor()
-
+		play_intro()
 	}
 
 	#menu_loop()
@@ -141,13 +107,9 @@ END {
 	world_width = viewport_width
 	POINTER_X = middle_viewport_x
 	POINTER_Y = middle_viewport_y
-	delete WORLD_MAP
-	#generate_random_walk_cave(WORLD_MAP, world_width, world_height, 3, 3, 1000)
-	#ENTITIES[0]["x"] = 5
-    #ENTITIES[0]["y"] = 5
-	generate_dungeon(WORLD_MAP, world_width, world_height, 30, 6, 10)
-	generate_border(WORLD_MAP, world_width, world_height)
-	spawn_monsters()
+
+	generate_level(world_width, world_height)
+
 	cls()
 
 	if (TELNET_FLAG) {
@@ -187,6 +149,43 @@ function multiplayer_loop() {
 		#update()
 		render()
 	}
+}
+
+function play_intro() {
+	# Show game title
+	subtext_nr = randint(0, array_length(subtexts))
+	
+	draw_banner()
+	
+	sleep(2)
+	cls()
+
+	# Show game story
+	for (i in story) {
+		move_cursor(4, (screen_height-8)/2+i)
+		split(story[i], words," ")
+		for (w in words) {
+
+			for (o=1;o<=length(words[w]);o++) {
+				char = substr(words[w], o, 1)
+				if (char != ".") {
+					fade_in(char)
+					sleep(0.03)
+				} else {
+					printf char
+					sleep(1.5)
+				}
+				
+			}
+			sleep(0.05)
+			printf " "
+		}
+		
+	}
+	show_cursor()
+	printf "\n\n   Press any key to start"
+	get_input()
+	hide_cursor()
 }
 
 function draw_banner() {

@@ -13,8 +13,7 @@ function center(s,   screen_width) {
     printf "%" int(half_width+length(s)/2) "s\n", s
 }
 
-function repeat( str, n,    rep, i)
-{
+function repeat( str, n,    rep, i){
     for(i=0; i<n; i++ )
         rep = rep str   
     return rep
@@ -22,23 +21,17 @@ function repeat( str, n,    rep, i)
 
 # List functions
 function init(list) {list["length"] = 0}
-function len(list) {return list["length"]}
+
 function append(list, item) {
-    list[list["length"]] = item
-    list["length"]++
+    list[length(list)+1] = item
 }
 
-function remove(list, idx) {
-    if (idx == list["length"]-1) {
-        del list[idx]
-        list["length"]--
-    } else if (0 <= idx && idx <= list["length"]-1) {
-        del list[idx]
-
-        for(i=idx;i++;i<list["length"]-1) {
-            list[idx] = list[idx+1]
-        }
-        list["length"]--
+function remove(list, idx,   n) {
+    if (idx == 1 && length(list) == 1) {
+        delete list[idx]
+    } else if (1 <= idx && idx <= length(list)) {
+        delete list[idx]
+        n = asort(list)
     }
 }
 
