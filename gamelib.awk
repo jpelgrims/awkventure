@@ -4,8 +4,8 @@
 
 BEGIN {
 	# Globals initialization
-	init(ITEMS)
-	init(ENTITIES)
+	split("", ITEMS)
+	split("", ENTITIES)
 	split("", INVENTORY)
 
 	MESSAGE_LOG[0] = ""
@@ -25,7 +25,7 @@ function get_experience_to_next_level() {
 }
 
 function add_entity(type, pos_x, pos_y, id, idx) {
-	idx = nr_of_entities()
+	idx = length(ENTITIES)
 
 	ENTITIES[idx]["type"] = type
 	ENTITIES[idx]["x"] = pos_x
@@ -58,7 +58,7 @@ function add_tile(type, pos_x, pos_y) {
 }
 
 function add_item(type, pos_x, pos_y, id, idx) {
-	idx = nr_of_items() + 1
+	idx = length(ITEMS)
 
 	ITEMS[idx]["type"] = type
 	ITEMS[idx]["x"] = pos_x
@@ -93,13 +93,13 @@ function is_blocked(x, y, type,    char, entity_blocked, tile_blocked, i) {
 	tile_blocked = 0
 	item_blocked = 0
 
-	for (i=0; i<nr_of_entities(); i++) {
+	for (i in ENTITIES) {
 		if (ENTITIES[i]["x"] == x && ENTITIES[i]["y"] == y && ENTITIES[i]["hp"] > 0) {
 			entity_blocked = 1
 		}
 	}
 
-	for (i=0; i<nr_of_items(); i++) {
+	for (i in ITEMS) {
 		if (ITEMS[i]["x"] == x && ITEMS[i]["y"] == y && !ITEMS[i]["picked_up"]) {
 			item_blocked = 1
 		}
@@ -136,7 +136,7 @@ function activate_tile(activator_id, x, y,    tile_id, tile_type, action) {
 } 
 
 function add_to_inventory(item_id) {
-	if (length(INVENTORY) <= 10) {
+	if (length(INVENTORY) < 10) {
 		append(INVENTORY, item_id)
 	}
 }
@@ -253,6 +253,7 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y, x, 
 				CURRENT_MENU = ""
 			} else {
 				RUNNING = 0
+				shutdown()
 			}
 		} else if (match(key, /8/)) {
 			POINTER_Y -= 1
@@ -299,11 +300,9 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y, x, 
 		} else if ((dx || dy) && is_blocked(x+dx, y+dy, "item") && hp > 0) {
 			item_id = get_item_at(x+dx, y+dy)
 			item_type = ITEMS[item_id]["type"]
-			if (item_id != 0) {
-				ITEMS[item_id]["picked_up"] = 1
-				add_to_inventory(item_id)
-				add_message("You picked up the " item_type "!")
-			}
+			ITEMS[item_id]["picked_up"] = 1
+			add_to_inventory(item_id)
+			add_message("You picked up the " item_type "!")
 			move_entity(idx, dx, dy)
 		}
 
@@ -315,16 +314,8 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y, x, 
 	}
 }
 
-function nr_of_entities() {
-	return length(ENTITIES)-1
-}
-
-function nr_of_items() {
-	return length(ITEMS)-1
-}
-
 function get_item_at(x, y,   i) {
-	for (i=0;i<nr_of_items(); i++) {
+	for (i in ITEMS) {
 		if (ITEMS[i]["x"] == x && ITEMS[i]["y"] == y) {
 			return i
 		}
@@ -334,7 +325,7 @@ function get_item_at(x, y,   i) {
 
 function get_entity_at(x, y,    i) {
 	# TODO: transform screen coords back to world coords and use that to get entity at x, y
-	for (i=0;i<nr_of_entities(); i++) {
+	for (i in ENTITIES) {
 		if (ENTITIES[i]["x"] == x && ENTITIES[i]["y"] == y) {
 			return i
 		}
@@ -344,7 +335,7 @@ function get_entity_at(x, y,    i) {
 
 
 function update_entities(   i, x, y) {
-	for (i=1;i<nr_of_entities();i++) {
+	for(i in ENTITIES) {
 		if (ENTITIES[i]["hp"] > 0) {
 			move_towards_player(i)
 		}
@@ -371,6 +362,7 @@ function attack_entity(entity_id, attacker_id,    type, damage, str, amount, ent
 		
 		if (entity_hp_after <= 0) {
 			message = message "You die!"
+			system("rm -f savefile.sav")
 		}
 
 		add_message(message)""
@@ -513,19 +505,19 @@ function generate_level(world_width, world_height,    temp_array) {
 	delete MEMORY_MAP
 
 	# Remove all entities except the player
-	for(i=1;i<length(ENTITIES);i++) {
+	for (i in ENTITIES) {
+		if (i == 0) {
+			continue
+		}
 		delete ENTITIES[i]
 	}
 
 	# Remove all items that are not in the inventory
-	for(i=1;i<length(ITEMS);i++) {
+	for (i in ITEMS) {
 		if (!ITEMS[i]["picked_up"]) {
 			delete ITEMS[i]
 		}
 	}
-
-	# Initialization
-	#add_entity("player", player_x, player_y)
 
 	#generate_random_walk_cave(WORLD_MAP, world_width, world_height, 3, 3, 1000)
 	generate_dungeon(WORLD_MAP, world_width, world_height, 30, 6, 10)

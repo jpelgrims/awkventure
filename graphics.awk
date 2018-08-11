@@ -125,7 +125,7 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, uniq_items, fro
 
 	# Enumerate different types of visible tiles, entities and items
 
-	for (i=0; i<nr_of_entities();i++) {
+	for (i in ENTITIES) {
         x = ENTITIES[i]["x"]
         y = ENTITIES[i]["y"]
 		type = ENTITIES[i]["type"]
@@ -135,7 +135,7 @@ function render_legend(   type, char, uniq_tiles, uniq_entities, uniq_items, fro
 		}
 	}
 
-	for (i=0; i<nr_of_items();i++) {
+	for (i in ITEMS) {
         x = ITEMS[i]["x"]
         y = ITEMS[i]["y"]
 		type = ITEMS[i]["type"]
@@ -218,17 +218,18 @@ function render_info_menu(   x, pointer_char) {
 	}
 }
 
-function render_inventory_menu(   menu_height, x, idx, i, item_type, char, color) {
+function render_inventory_menu(   menu_height, x, idx, i, item_type, char, color, count) {
 	menu_height = length(INVENTORY) + 2
 	draw_menu_canvas("     INVENTORY    ", menu_height)
 	x = screen_width - 19
 
-	for (i=1; i<=length(INVENTORY);i++) {
+	count = 1
+	for (i in INVENTORY) {
 		item_id = INVENTORY[i]
 		item_type = ITEMS[item_id]["type"]
 		char = ITEM_DATA[item_type]["char"]
 		color = ITEM_DATA[item_type]["color"]
-		console_write(char, x+4, 3+i-1, color, "menu_gray")
+		console_write(char, x+4, 3+count-1, color, "menu_gray")
 
 		if (is_equipped(item_id)) {
 			color = "yellow"
@@ -236,12 +237,13 @@ function render_inventory_menu(   menu_height, x, idx, i, item_type, char, color
 			color = "white"
 		}
 
-		console_write(item_type, x+6, 3+i-1, color, "menu_gray")
+		console_write(item_type, x+6, 3+count-1, color, "menu_gray")
 
 		if (i == INVENTORY_SELECTION+1) {
 			console_write(">", x+2, 3+INVENTORY_SELECTION, "light_steel_blue", "menu_gray")
 		}
 
+		count++
 	}
 }
 
@@ -328,8 +330,7 @@ function render(entity_idx,    x, y) {
 }
 
 function render_message_log(   i, color) {
-	log_length = length(MESSAGE_LOG)
-	for (i=0;i<log_length;i++) {
+	for (i in MESSAGE_LOG) {
 		color = sprintf("%s,%s,%s", 250-50*i, 250-50*i, 250-50*i)
 		console_write(MESSAGE_LOG[i], 2, i, color)
 	}
@@ -433,7 +434,7 @@ function camera_view(focus_x, focus_y,   char) {
 	}
 
 	# Draw corpses
-	for (i=0; i<nr_of_entities();i++) {
+	for (i in ENTITIES) {
 		x = ENTITIES[i]["x"]
 		y = ENTITIES[i]["y"]
 		if (ENTITIES[i]["hp"] <= 0 && is_visible(x, y)) {
@@ -444,7 +445,7 @@ function camera_view(focus_x, focus_y,   char) {
 	}
 
 	# Draw items
-	for (i=0; i<nr_of_items();i++) {
+	for (i in ITEMS) {
 		x = ITEMS[i]["x"]
 		y = ITEMS[i]["y"]
 
@@ -459,7 +460,7 @@ function camera_view(focus_x, focus_y,   char) {
 	}
 
 	# Draw entities
-	for (i=0; i<nr_of_entities();i++) {
+	for (i in ENTITIES) {
 		x = ENTITIES[i]["x"]
 		y = ENTITIES[i]["y"]
 

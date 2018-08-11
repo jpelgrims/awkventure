@@ -9,10 +9,6 @@ BEGIN {
 	# Seed random number generator with day+time
 	srand()
 
-	# Player position
-	player_x = 2
-	player_y = 2
-
 	world_maps[0] = 0
 	scripts[0] = 0
 }
@@ -84,6 +80,8 @@ BEGIN {
 
 
 
+
+
 END {
 	add_entity("player", player_x, player_y)
 
@@ -100,29 +98,22 @@ END {
 		play_intro()
 	}
 
-	#menu_loop()
-
-	#set_level(1)
-	world_height = viewport_height
-	world_width = viewport_width
-	POINTER_X = middle_viewport_x
-	POINTER_Y = middle_viewport_y
-
-	generate_level(world_width, world_height)
-
-	cls()
-
-	if (TELNET_FLAG) {
-		multiplayer_loop()
-	} else {
-		singleplayer_loop()
-	}
-	
-
+	menu_loop()
 	shutdown()
 }
 
 function singleplayer_loop() {
+	POINTER_X = middle_viewport_x
+	POINTER_Y = middle_viewport_y
+	world_height = viewport_height
+	world_width = viewport_width
+
+	if (!savefile()) {
+		generate_level(world_width, world_height)
+	}
+
+	cls()
+	
 	add_message("Welcome to awkventure!")
 	render(0)
 	RUNNING = 1
@@ -206,18 +197,22 @@ function draw_banner_faded() {
 function menu_loop() {
 	draw_banner_faded()
 	cursor_pos = 1
-	nr_of_menu_items = 4
+	nr_of_menu_items = 2
 	while (1) {
-		#cls()
-		set_foreground_color(i, 0, 0)
+		set_foreground_color(200, 0, 0)
 		draw_banner()
 		set_foreground_color(255, 255, 255)
 		move_cursor(0, 14)
-		center("Campaign mode", screen_width)
-		center("Dungeon mode ", screen_width)
-		center("Freeroam mode", screen_width)
-		center("Exit         ", screen_width)
-		putch(">", 32, 14+cursor_pos-1)
+
+		if (savefile()) {
+			center("Continue game        ", screen_width)
+		} else {
+			center("New game             ", screen_width)
+		}
+		center("Exit                 ", screen_width)
+		print("")
+		center("Press (E) to choose  ", screen_width)
+		putch(">", 27, 14+cursor_pos-1)
 
 		key = get_input(0)
 
@@ -226,13 +221,16 @@ function menu_loop() {
 				cursor_pos-- 
 			}
 		} else if (key == KEY["DOWN"] || match(key, /\033\[B/)) {
-			if (cursor_pos < 4) {
+			if (cursor_pos < nr_of_menu_items) {
 				cursor_pos++ 
 			}
-		} else if (match(key, /\033.*/)) {
-			print("x")
-			exit(0)
-			sleep(2)
+		} else if (match(key,  /e|E/)) {
+			if (cursor_pos == 1) {
+				singleplayer_loop()
+			} else if (cursor_pos == 2) {
+				shutdown()
+			}
+		}  else if (match(key,  /^\033$/)) {
 			shutdown()
 		}
 		sleep(0.01)

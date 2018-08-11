@@ -20,7 +20,7 @@ function repeat( str, n,    rep, i){
 }
 
 # List functions
-function init(list) {list["length"] = 0}
+function init(list) {}
 
 function append(list, item) {
     list[length(list)+1] = item
