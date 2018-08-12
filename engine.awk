@@ -25,6 +25,10 @@ BEGIN {
 	load_block(banner)
 }
 
+/^\[BACKGROUND\]/ {
+	load_block(background)
+}
+
 /^\[STORY\]/ {
 	load_block(story)
 }
@@ -186,6 +190,12 @@ function draw_banner() {
 	}
 }
 
+function draw_background() {
+	for(y=0;y<length(background);y++){
+		print(background[y])
+	}
+}
+
 function draw_banner_faded() {
 	for(i=0;i<=200;i+=5) {
 		set_foreground_color(i, 0, 0)
@@ -198,21 +208,26 @@ function menu_loop() {
 	draw_banner_faded()
 	cursor_pos = 1
 	nr_of_menu_items = 2
+	sleep(1)
+	set_foreground_color(255, 255, 255)
+	draw_background()
 	while (1) {
-		set_foreground_color(200, 0, 0)
-		draw_banner()
-		set_foreground_color(255, 255, 255)
-		move_cursor(0, 14)
 
 		if (savefile()) {
-			center("Continue game        ", screen_width)
+			putch("Continue game", 35, 17)
 		} else {
-			center("New game             ", screen_width)
+			putch("New game", 35, 17)
 		}
-		center("Exit                 ", screen_width)
-		print("")
-		center("Press (E) to choose  ", screen_width)
-		putch(">", 27, 14+cursor_pos-1)
+		putch("Exit", 35, 18)
+		
+		putch("Press (E) to choose", 35, 20)
+		putch("Made by Jelle Pelgrims", 59, 23)
+
+		for(y=16;y<17+nr_of_menu_items;y++) {
+			putch(" ", 33, y+cursor_pos-1)
+		}
+
+		putch(">", 33, 17+cursor_pos-1)
 
 		key = get_input(0)
 
