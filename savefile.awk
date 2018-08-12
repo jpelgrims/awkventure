@@ -43,7 +43,7 @@ function save_game(   i, x, y, hp, type, save_file) {
     print "[SAVE TILES]" > save_file
     for(y=0;y<world_height;y++) {
         line = ""
-        for (x=0;x<world_width;x++) {
+        for (x=1;x<world_width;x++) {
             line = line WORLD_MAP[x][y]
         }
         print line > save_file
@@ -54,7 +54,7 @@ function save_game(   i, x, y, hp, type, save_file) {
     print "[SAVE MEMORY]" > save_file
     for(y=0;y<world_height;y++) {
         line = ""
-        for (x=0;x<world_width;x++) {
+        for (x=1;x<world_width;x++) {
             line = line MEMORY_MAP[x][y]
         }
         print line > save_file
@@ -125,12 +125,12 @@ function load_save_map(storage_array,   chars) {
 		line = $0
 		
 		if (map_width == 0) {
-			map_width = length(line)
+			map_width = length(line)+1
 			for (x=0; x < map_width; x++) {
 				storage_array[x][map_height] = substr(line, x, 1)
 			}
 			map_height++
-		} else if (map_width != 0 && length(line) == map_width) {
+		} else if (map_width != 0 && length(line)+1 == map_width) {
 			for (x=0; x < map_width; x++) {
 				storage_array[x][map_height] = substr(line, x, 1)
 			}

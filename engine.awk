@@ -83,8 +83,6 @@ BEGIN {
 
 
 END {
-	add_entity("player", player_x, player_y)
-
 	# Basic console setup
 	hide_cursor()
 	if (TELNET_FLAG) {
@@ -109,7 +107,9 @@ function singleplayer_loop() {
 	world_width = viewport_width
 
 	if (!savefile()) {
+		add_entity("player", player_x, player_y)
 		generate_level(world_width, world_height)
+		play_intro()
 	}
 
 	cls()
