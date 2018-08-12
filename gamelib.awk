@@ -255,31 +255,31 @@ function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y, x, 
 				RUNNING = 0
 				shutdown()
 			}
-		} else if (match(key, /8/)) {
+		} else if (key == KEY["POINTER_UP"]) {
 			POINTER_Y -= 1
-		} else if (match(key, /2/)) {
+		} else if (key == KEY["POINTER_DOWN"]) {
 			POINTER_Y += 1
-		} else if (match(key, /4/)) {
+		} else if (key == KEY["POINTER_LEFT"]) {
 			POINTER_X -= 1
-		} else if (match(key, /6/)) {
+		} else if (key == KEY["POINTER_RIGHT"]) {
 			POINTER_X += 1
-		} else if (match(key, /l/)) {
+		} else if (key == KEY["LEGEND_MENU"]) {
 			CURRENT_MENU = "legend"
-		} else if (match(key, /c/)) {
+		} else if (key == KEY["CHARACTER_MENU"]) {
 			CURRENT_MENU = "character"
-		} else if (match(key, /i/)) {
+		} else if (key == KEY["INVENTORY_MENU"]) {
 			CURRENT_MENU = "inventory"
-		} else if (match(key, /-/)) {
+		} else if (key == KEY["INVENTORY_POINTER_UP"]) {
 			INVENTORY_SELECTION = max(0, INVENTORY_SELECTION-1)
-		} else if (match(key, /+/)) {
+		} else if (key == KEY["INVENTORY_POINTER_DOWN"]) {
 			INVENTORY_SELECTION = min(INVENTORY_SELECTION+1, max(0, length(INVENTORY)-1))
-		} else if (match(key, /\//)) {
+		} else if (key == KEY["DROP_ITEM"]) {
 			drop_item()
-		} else if (match(key, /u/)) {
+		} else if (key == KEY["USE_ITEM"]) {
 			use_item()
-		} else if (match(key, /o/)) {
+		} else if (key == KEY["SAVE_GAME"]) {
 			save_game()
-		} else if (match(key, /r/) && hp > 0 && EQUIPMENT["ranged_weapon"]) {
+		} else if (key == KEY["RANGED_ATTACK"] && hp > 0 && EQUIPMENT["ranged_weapon"]) {
 			world_x = get_world_x(POINTER_X, x)
 			world_y = get_world_y(POINTER_Y, y)
 			entity_id = get_entity_at(world_x, world_y)

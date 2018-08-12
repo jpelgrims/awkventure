@@ -84,23 +84,6 @@ function save_game(   i, x, y, hp, type, save_file) {
     add_message("Your progress is saved.")
 }
 
-/^\[SAVE GENERAL\]/ {
-	load_block(lines)
-
-	for (i in lines) {
-		split(lines[i],a,"=")
-		key = trim(a[1])
-		value = trim(a[2])
-		globals[key] = value
-	}
-
-    world_width = globals["WORLD_WIDTH"]
-    world_height = globals["WORLD_HEIGHT"]
-    GAME_LEVEL = globals["GAME_LEVEL"]
-    CURRENT_LEVEL = globals["CURRENT_LEVEL"]
-    CURRENT_EXPERIENCE = globals["CURRENT_EXPERIENCE"]
-}
-
 function load_csv_savefile(storage_array) {
     getline
 
@@ -161,6 +144,23 @@ function savefile() {
         }
     }
     return 0
+}
+
+/^\[SAVE GENERAL\]/ {
+	load_block(lines)
+
+	for (i in lines) {
+		split(lines[i],a,"=")
+		key = trim(a[1])
+		value = trim(a[2])
+		globals[key] = value
+	}
+
+    world_width = globals["WORLD_WIDTH"]
+    world_height = globals["WORLD_HEIGHT"]
+    GAME_LEVEL = globals["GAME_LEVEL"]
+    CURRENT_LEVEL = globals["CURRENT_LEVEL"]
+    CURRENT_EXPERIENCE = globals["CURRENT_EXPERIENCE"]
 }
 
 /^\[SAVE ENTITIES\]/ {
