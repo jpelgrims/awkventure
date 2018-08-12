@@ -37,7 +37,7 @@ function readline() {
 	if (trim($0) == "") {
 		return 0
 	} else if (EOF) {
-		return 2
+		return 0
 	} else {
 		return 1
 	}

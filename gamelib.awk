@@ -200,7 +200,7 @@ function use_item(   item_type, message, entity_type, entity_max_health, current
 function is_equipped(item_id,    effect, category) {
 	type = ITEMS[item_id]["type"]
 	category = ITEM_DATA[type]["category"]
-	return EQUIPMENT[category] == item_id
+	return EQUIPMENT[category] == item_id && EQUIPMENT[category] != ""
 }
 
 function handle_multiplayer_input(keys,   i, a, id, key, idx) {

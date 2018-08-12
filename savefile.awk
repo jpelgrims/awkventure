@@ -69,6 +69,18 @@ function save_game(   i, x, y, hp, type, save_file) {
     }
     print line > save_file
 
+    # Save player equipment
+    print "" > save_file
+    print "[SAVE EQUIPMENT]" > save_file
+    print "melee_weapon=" EQUIPMENT["melee_weapon"] > save_file
+    print "ranged_weapon=" EQUIPMENT["ranged_weapon"] > save_file
+    print "feat_wear=" EQUIPMENT["feat_wear"] > save_file
+    print "hand_wear=" EQUIPMENT["hand_wear"] > save_file
+    print "head_wear=" EQUIPMENT["head_wear"] > save_file
+    print "torso_wear=" EQUIPMENT["torso_wear"] > save_file
+    print "leg_wear=" EQUIPMENT["leg_wear"] > save_file
+    print "" > save_file
+
     add_message("Your progress is saved.")
 }
 
@@ -162,6 +174,17 @@ function savefile() {
 /^\[SAVE INVENTORY\]/ {
 	getline
     split($0,INVENTORY,",")
+}
+
+/^\[SAVE EQUIPMENT\]/ {
+	load_block(lines)
+
+	for (i in lines) {
+		split(lines[i],a,"=")
+		category = trim(a[1])
+		item_id = trim(a[2])
+		EQUIPMENT[category] = item_id
+	}
 }
 
 /^\[SAVE TILES\]/ {
