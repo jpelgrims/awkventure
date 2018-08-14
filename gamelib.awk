@@ -20,30 +20,11 @@ BEGIN {
     LEVEL_UP_FACTOR = 150
 }
 
-function get_experience_to_next_level() {
-	return LEVEL_UP_BASE + CURRENT_LEVEL * LEVEL_UP_FACTOR
-}
+####################
+## Game functions ##
+####################
 
-function add_entity(type, pos_x, pos_y, id, idx) {
-	idx = length(ENTITIES)
-
-	ENTITIES[idx]["type"] = type
-	ENTITIES[idx]["x"] = pos_x
-	ENTITIES[idx]["y"] = pos_y
-	ENTITIES[idx]["hp"] = ENTITY_DATA[type]["hp"]	
-
-	ENTITY_ID_TO_INDEX[id] = idx
-	return idx
-}
-
-function entity_exists(id) {
-	return ENTITY_ID_TO_INDEX[id]
-}
-
-function get_entity_index(id) {
-	return ENTITY_ID_TO_INDEX[id]
-}
-
+# Function that adds a message to the on-screen message log
 function add_message(message,   i) {
 	for(i=3; i>=0; i--) {
 		MESSAGE_LOG[i+1] = MESSAGE_LOG[i]
@@ -53,27 +34,9 @@ function add_message(message,   i) {
 
 }
 
-function add_tile(type, pos_x, pos_y) {
-
-}
-
-function add_item(type, pos_x, pos_y, id, idx) {
-	idx = length(ITEMS)
-
-	ITEMS[idx]["type"] = type
-	ITEMS[idx]["x"] = pos_x
-	ITEMS[idx]["y"] = pos_y
-
-	ITEM_ID_TO_INDEX[id] = idx
-	return idx
-}
-
-function is_visible(x, y) {
-	return VISIBLE_MAP[x][y] == 1
-}
-
-function is_memorized(x, y) {
-	return MEMORY_MAP[x][y] == 1
+function set_pointer(x, y) {
+	POINTER_X = middle_viewport_x
+	POINTER_Y = middle_viewport_y
 }
 
 function is_entity(char) {
@@ -87,6 +50,11 @@ function is_tile(char) {
 function is_item(char) {
 	return index(ITEM_DATA["CHARSET"], char)
 }
+
+
+#########################
+## World map functions ##
+#########################
 
 function is_blocked(x, y, type,    char, entity_blocked, tile_blocked, i) {
 	entity_blocked = 0
@@ -119,6 +87,7 @@ function is_blocked(x, y, type,    char, entity_blocked, tile_blocked, i) {
 	}
 }
 
+# Function to "activate" the tile at the given location. Add tile-specific logic here.
 function activate_tile(activator_id, x, y,    tile_id, tile_type, action) {
 	tile_id = WORLD_MAP[x][y]
 	tile_type = TILE_DATA[tile_id]["type"]
@@ -135,91 +104,49 @@ function activate_tile(activator_id, x, y,    tile_id, tile_type, action) {
 	}
 } 
 
-function add_to_inventory(item_id) {
-	if (length(INVENTORY) < 10) {
-		append(INVENTORY, item_id)
+function is_visible(x, y) {
+	return VISIBLE_MAP[x][y] == 1
+}
+
+function is_memorized(x, y) {
+	return MEMORY_MAP[x][y] == 1
+}
+
+######################
+## Player functions ##
+######################
+
+function get_experience_to_next_level() {
+	return LEVEL_UP_BASE + CURRENT_LEVEL * LEVEL_UP_FACTOR
+}
+
+function gain_experience(experience,   message) {
+	CURRENT_EXPERIENCE += experience
+	message = "You gained " experience " xp."
+	if (CURRENT_EXPERIENCE > get_experience_to_next_level()) {
+		CURRENT_LEVEL += 1
+		message = message " You gained a level!"
 	}
+	add_message(message)
 }
 
-function drop_item(   item_id, x, y, type) {
-	if (length(INVENTORY) > 0) {
-		item_id = INVENTORY[INVENTORY_SELECTION+1]
-		x = ENTITIES[0]["x"]
-		y = ENTITIES[0]["y"]
 
-		# Move item to where the player is standing
-		ITEMS[item_id]["x"] = x
-		ITEMS[item_id]["y"] = y
-		ITEMS[item_id]["picked_up"] = 0
+######################
+## Entity functions ##
+######################
 
-		remove(INVENTORY, INVENTORY_SELECTION+1)
-		
-		type = ITEMS[item_id]["type"]
-		add_message("You dropped the " type "!")
-	}
+# Function that adds an entity to the game world at the specified location
+function add_entity(type, pos_x, pos_y, id, idx) {
+	idx = length(ENTITIES)
+
+	ENTITIES[idx]["type"] = type
+	ENTITIES[idx]["x"] = pos_x
+	ENTITIES[idx]["y"] = pos_y
+	ENTITIES[idx]["hp"] = ENTITY_DATA[type]["hp"]	
+
+	ENTITY_ID_TO_INDEX[id] = idx
+	return idx
 }
-
-function use_item(   item_type, message, entity_type, entity_max_health, current_health, item_id, category) {
-	if (length(INVENTORY) > 0) {
-		item_id = INVENTORY[INVENTORY_SELECTION+1]
-		item_type = ITEMS[item_id]["type"]
-		effect = ITEM_DATA[item_type]["effect"]
-		category = ITEM_DATA[item_type]["category"]
-
-		message = "You used the " item_type ". "
-
-		if (effect == "heal") {
-			entity_type = ENTITIES[0]["type"]
-			entity_max_health = ENTITY_DATA[entity_type]["hp"]
-			ENTITIES[0]["hp"] = entity_max_health
-			message = message "You health was restored!"
-		} else if (effect == "sicken") {
-			current_health = ENTITIES[0]["hp"]
-			ENTITIES[0]["hp"] = int(current_health / 2)
-			message = message "You feel sick!"
-		} else if (effect == "equip") {
-			if (!is_equipped(item_id)) {
-				EQUIPMENT[category] = item_id
-				message = "You equip the " item_type "!"
-			} else {
-				delete EQUIPMENT[category]
-				message = "You remove the " item_type "!"
-			}
-		} else {
-			message = message "Nothing happens!"
-		}
-
-		add_message(message)
-		if (category == "consumable") {
-			remove(INVENTORY, INVENTORY_SELECTION+1)
-			INVENTORY_SELECTION = min(INVENTORY_SELECTION=1, length(INVENTORY))
-		}
-	}
-}
-
-function is_equipped(item_id,    effect, category) {
-	type = ITEMS[item_id]["type"]
-	category = ITEM_DATA[type]["category"]
-	return EQUIPMENT[category] == item_id && EQUIPMENT[category] != ""
-}
-
-function handle_multiplayer_input(keys,   i, a, id, key, idx) {
-
-	for(i=0;i<length(keys);i++) {
-		split(keys[i],a," ")
-		id = a[1]
-		key = a[2]
-
-		if (!entity_exists(id)) {
-			# Add check for location (see if not wall)
-			add_entity("player", 2, 2, id)
-		}
-
-		idx = get_entity_index(id)
-		handle_input(id, key)
-	}
-}
-
 
 function move_entity(id, dx, dy,    x, y) {
 	x = ENTITIES[id]["x"] + dx 
@@ -231,98 +158,6 @@ function move_entity(id, dx, dy,    x, y) {
 	}
 }
 
-function set_pointer(x, y) {
-	POINTER_X = middle_viewport_x
-	POINTER_Y = middle_viewport_y
-}
-
-function handle_input(idx, key,    str, entity_id, dx, dy, world_x, world_y, x, y) {
-	if (length(key) != 0) {
-
-		x = ENTITIES[idx]["x"]
-		y = ENTITIES[idx]["y"]
-		hp = ENTITIES[idx]["hp"]
-		
-		if (key == KEY["UP"] || match(key, /\033\[A/)) { dy-- }  
-		else if (key == KEY["DOWN"] || match(key, /\033\[B/)) { dy++ } 
-		else if (key == KEY["LEFT"] || match(key, /\033\[D/)) { dx-- } 
-		else if (key == KEY["RIGHT"] || match(key, /\033\[C/)) { dx++} 
-		else if (key == KEY["QUIT"] || match(key, /^\033$/)) {
-			# Close any open menus, otherwiste close game
-			if (CURRENT_MENU != "") {
-				CURRENT_MENU = ""
-			} else {
-				RUNNING = 0
-				shutdown()
-			}
-		} else if (key == KEY["POINTER_UP"]) {
-			POINTER_Y -= 1
-		} else if (key == KEY["POINTER_DOWN"]) {
-			POINTER_Y += 1
-		} else if (key == KEY["POINTER_LEFT"]) {
-			POINTER_X -= 1
-		} else if (key == KEY["POINTER_RIGHT"]) {
-			POINTER_X += 1
-		} else if (key == KEY["LEGEND_MENU"]) {
-			CURRENT_MENU = "legend"
-		} else if (key == KEY["CHARACTER_MENU"]) {
-			CURRENT_MENU = "character"
-		} else if (key == KEY["INVENTORY_MENU"]) {
-			CURRENT_MENU = "inventory"
-		} else if (key == KEY["INVENTORY_POINTER_UP"]) {
-			INVENTORY_SELECTION = max(0, INVENTORY_SELECTION-1)
-		} else if (key == KEY["INVENTORY_POINTER_DOWN"]) {
-			INVENTORY_SELECTION = min(INVENTORY_SELECTION+1, max(0, length(INVENTORY)-1))
-		} else if (key == KEY["DROP_ITEM"]) {
-			drop_item()
-		} else if (key == KEY["USE_ITEM"]) {
-			use_item()
-		} else if (key == KEY["SAVE_GAME"]) {
-			save_game()
-		} else if (key == KEY["RANGED_ATTACK"] && hp > 0 && EQUIPMENT["ranged_weapon"]) {
-			world_x = get_world_x(POINTER_X, x)
-			world_y = get_world_y(POINTER_Y, y)
-			entity_id = get_entity_at(world_x, world_y)
-			if (entity_id != "" && entity_id != 0) {
-				attack_entity(entity_id, 0)
-			}
-		}
-		
-		if ((dx || dy) && !is_blocked(x+dx, y+dy) && hp > 0) {
-			# Move player and set cursor position
-			move_entity(idx, dx, dy)
-			set_pointer(middle_viewport_x, middle_viewport_y)
-		} else if ((dx || dy) && is_blocked(x+dx, y+dy, "entity") && hp > 0) {
-			entity_id = get_entity_at(x+dx, y+dy)
-			if (entity_id != "") {
-				attack_entity(entity_id, 0)
-			}
-		} else if ((dx || dy) && is_blocked(x+dx, y+dy, "item") && hp > 0) {
-			item_id = get_item_at(x+dx, y+dy)
-			item_type = ITEMS[item_id]["type"]
-			ITEMS[item_id]["picked_up"] = 1
-			add_to_inventory(item_id)
-			add_message("You picked up the " item_type "!")
-			move_entity(idx, dx, dy)
-		}
-
-		if ((dx||dy) || match(key, /r/)) {
-			return 1
-		} else {
-			return 0
-		}
-	}
-}
-
-function get_item_at(x, y,   i) {
-	for (i in ITEMS) {
-		if (ITEMS[i]["x"] == x && ITEMS[i]["y"] == y) {
-			return i
-		}
-	}
-	return ""
-}
-
 function get_entity_at(x, y,    i) {
 	# TODO: transform screen coords back to world coords and use that to get entity at x, y
 	for (i in ENTITIES) {
@@ -331,6 +166,14 @@ function get_entity_at(x, y,    i) {
 		}
 	}
 	return ""
+}
+
+function entity_exists(id) {
+	return ENTITY_ID_TO_INDEX[id]
+}
+
+function get_entity_index(id) {
+	return ENTITY_ID_TO_INDEX[id]
 }
 
 
@@ -390,16 +233,6 @@ function attack_entity(entity_id, attacker_id,    type, damage, str, amount, ent
 		}
 		
 	}
-}
-
-function gain_experience(experience,   message) {
-	CURRENT_EXPERIENCE += experience
-	message = "You gained " experience " xp."
-	if (CURRENT_EXPERIENCE > get_experience_to_next_level()) {
-		CURRENT_LEVEL += 1
-		message = message " You gained a level!"
-	}
-	add_message(message)
 }
 
 function drop_loot(x, y, from_entity,   item_index, item_type) {
@@ -464,41 +297,114 @@ function move_towards_player(entity_id,    x, y, dx, dy, type, str) {
 	} else {
 		move_randomly(entity_id)
 	}
-
-
-
 }
 
-function shutdown() {
-	cls()
-	printf "\033[H"
-	printf "\033[?25h"
-	if (!TELNET_FLAG) {
-		system("stty echo")
+####################
+## Item functions ##
+####################
+
+# Function that adds an item at the specified location
+function add_item(type, pos_x, pos_y, id, idx) {
+	idx = length(ITEMS)
+
+	ITEMS[idx]["type"] = type
+	ITEMS[idx]["x"] = pos_x
+	ITEMS[idx]["y"] = pos_y
+
+	ITEM_ID_TO_INDEX[id] = idx
+	return idx
+}
+
+function is_equipped(item_id,    effect, category) {
+	type = ITEMS[item_id]["type"]
+	category = ITEM_DATA[type]["category"]
+	return EQUIPMENT[category] == item_id && EQUIPMENT[category] != ""
+}
+
+# Function to add an item to the users inventory
+function add_to_inventory(item_id) {
+	if (length(INVENTORY) < 10) {
+		append(INVENTORY, item_id)
 	}
-	exit 0
+}
+
+# Function that drops the currently selected item from the players inventory
+function drop_item(   item_id, x, y, type) {
+	if (length(INVENTORY) > 0) {
+		item_id = INVENTORY[INVENTORY_SELECTION+1]
+		x = ENTITIES[0]["x"]
+		y = ENTITIES[0]["y"]
+
+		# Move item to where the player is standing
+		ITEMS[item_id]["x"] = x
+		ITEMS[item_id]["y"] = y
+		ITEMS[item_id]["picked_up"] = 0
+
+		remove(INVENTORY, INVENTORY_SELECTION+1)
+		
+		type = ITEMS[item_id]["type"]
+		add_message("You dropped the " type "!")
+	}
+}
+
+# Function that "activates" the currently select item from the players inventory. Add item-specific logic here.
+function use_item(   item_type, message, entity_type, entity_max_health, current_health, item_id, category) {
+	if (length(INVENTORY) > 0) {
+		item_id = INVENTORY[INVENTORY_SELECTION+1]
+		item_type = ITEMS[item_id]["type"]
+		effect = ITEM_DATA[item_type]["effect"]
+		category = ITEM_DATA[item_type]["category"]
+
+		message = "You used the " item_type ". "
+
+		if (effect == "heal") {
+			entity_type = ENTITIES[0]["type"]
+			entity_max_health = ENTITY_DATA[entity_type]["hp"]
+			ENTITIES[0]["hp"] = entity_max_health
+			message = message "You health was restored!"
+		} else if (effect == "sicken") {
+			current_health = ENTITIES[0]["hp"]
+			ENTITIES[0]["hp"] = int(current_health / 2)
+			message = message "You feel sick!"
+		} else if (effect == "equip") {
+			if (!is_equipped(item_id)) {
+				EQUIPMENT[category] = item_id
+				message = "You equip the " item_type "!"
+			} else {
+				delete EQUIPMENT[category]
+				message = "You remove the " item_type "!"
+			}
+		} else {
+			message = message "Nothing happens!"
+		}
+
+		add_message(message)
+		if (category == "consumable") {
+			remove(INVENTORY, INVENTORY_SELECTION+1)
+			INVENTORY_SELECTION = min(INVENTORY_SELECTION=1, length(INVENTORY))
+		}
+	}
+}
+
+function get_item_at(x, y,   i) {
+	for (i in ITEMS) {
+		if (ITEMS[i]["x"] == x && ITEMS[i]["y"] == y) {
+			return i
+		}
+	}
+	return ""
 }
 
 function spawn_items() {
 	# TODO
 }
 
-function spawn_monsters(   x, y, entity_char, toss, world_height, world_width, type) {
-	world_width = WORLD_MAP["width"]
-	world_height = WORLD_MAP["height"]
-	for (y=0; y<world_height;y++) {
-		for (x=0;x<world_width;x++) {
-			toss = randint(0,100)
-			if (toss >= 99 && !is_blocked(x, y)) {
-				entity_char = randchar(ENTITY_DATA["CHARSET"])
-				type = ENTITY_DATA[entity_char]["type"]
-				add_entity(type, x, y)
-			}
-		}
-	}
-}
 
+####################
+## Level functions ##
+####################
 
+# Function to generate a completely new level
 function generate_level(world_width, world_height,    temp_array) {
 	# These need to be emptied to avoid artifacts from previous levels
 	delete VISIBLE_MAP
@@ -525,6 +431,23 @@ function generate_level(world_width, world_height,    temp_array) {
 	spawn_monsters()
 }
 
+# Function that spawns monsters over the world map
+function spawn_monsters(   x, y, entity_char, toss, world_height, world_width, type) {
+	world_width = WORLD_MAP["width"]
+	world_height = WORLD_MAP["height"]
+	for (y=0; y<world_height;y++) {
+		for (x=0;x<world_width;x++) {
+			toss = randint(0,100)
+			if (toss >= 99 && !is_blocked(x, y)) {
+				entity_char = randchar(ENTITY_DATA["CHARSET"])
+				type = ENTITY_DATA[entity_char]["type"]
+				add_entity(type, x, y)
+			}
+		}
+	}
+}
+
+# Function to load a level from a loaded gamepack file
 function set_level(level_nr) {
 
 	# Load level map
@@ -540,13 +463,4 @@ function set_level(level_nr) {
 
 	# Run level script
 	run_script(scripts["level"][level_nr])
-
-}
-
-function read_input_file(keys,    i) {
-	i = 0
-	while (getline) {
-		keys[i] = $0
-		i += 1
-	}
 }

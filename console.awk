@@ -209,6 +209,7 @@ function get_input(echo,   arrow, key) {
 
 ### Other functions ###
 
+# Function that gradually reveals a character
 function fade_in(char,   i, step) {
     step = 1
     for (i=0;i<=255;i+=step) {
