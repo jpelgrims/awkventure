@@ -8,9 +8,6 @@ menu()
     echo "+--------------------------+"
     echo ""
     echo "   P)lay as guest"
-    echo "   C)hange controls"
-    echo "   R)egister"
-    echo "   L)ogin"
     echo "   E)xit"
     echo ""
     read -n 1 command
@@ -19,18 +16,6 @@ menu()
         echo "Playing as guest..."
         echo $'\377\375\042\377\373\001'
         bash -c "./run.sh"
-    elif echo $command | grep -Eq '^[Cc|Change|change]'; then
-        echo "Functionality not implemented yet."
-        sleep 1
-        menu
-    elif echo $command | grep -Eq '^[Rr|Register|register]'; then
-        echo "Functionality not implemented yet."
-        sleep 1
-        menu
-    elif echo $command | grep -Eq '^[Ll|Login|login]'; then
-        echo "Functionality not implemented yet."
-        sleep 1
-        menu
     elif echo $command | grep -Eq '^([Ee]|\033)'; then
         echo "Goodbye"
         exit 0

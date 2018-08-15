@@ -15,7 +15,6 @@ function menu_loop() {
 		putch("Exit", 35, 18)
 		
 		putch("Press (E) to choose", 35, 20)
-		putch("Made by Jelle Pelgrims", 59, 23)
 
 		for(y=16;y<17+nr_of_menu_items;y++) {
 			putch(" ", 33, y+cursor_pos-1)
@@ -81,22 +80,32 @@ function play_intro() {
 	hide_cursor()
 }
 
-function draw_banner() {
+function draw_banner(ypos) {
 	for(y=0;y<length(banner);y++) {
-		move_cursor(0, (screen_height-12)/2+y)
+		move_cursor(0, (screen_height-12-ypos)/2+y)
 		center(banner[y], screen_width)
 	}
 }
 
-function draw_background() {
+function draw_background(y, i) {
+	for(y=0;y<6;y++) {
+		cls()
+		for(i=0;i<length(banner);i++) {
+			move_cursor(12, 6-y+i)
+			printf banner[i]
+		}
+		sleep(0.2)
+	}
+
 	for(y=0;y<length(background);y++){
-		print(background[y])
+		move_cursor(0, 8+y)
+		printf background[y]
 	}
 }
 
 function draw_banner_faded() {
 	for(i=0;i<=200;i+=5) {
-		set_foreground_color(i, 0, 0)
+		set_foreground_color(i, i, i)
 		draw_banner()
 		sleep(0.05)
 	}
